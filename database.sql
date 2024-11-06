@@ -12,6 +12,37 @@ DROP TABLE IF EXISTS User_Badge CASCADE;
 DROP TABLE IF EXISTS QuestionVote CASCADE;
 DROP TABLE IF EXISTS AnswerVote CASCADE;
 DROP TABLE IF EXISTS Image CASCADE;
+DROP TABLE IF EXISTS QuestionTag CASCADE;
+DROP TRIGGER IF EXISTS question_search_update ON Question;
+DROP TRIGGER IF EXISTS tag_search_update ON Tag;
+DROP TRIGGER IF EXISTS question_edited ON Question;
+DROP TRIGGER IF EXISTS answer_edited ON Answer;
+DROP TRIGGER IF EXISTS prevent_self_comment ON Comment;
+DROP TRIGGER IF EXISTS prevent_self_answer ON Answer;
+DROP TRIGGER IF EXISTS answer_notification ON Answer;
+DROP TRIGGER IF EXISTS comment_notification ON Comment;
+DROP TRIGGER IF EXISTS update_reports_count ON Report;
+DROP TRIGGER IF EXISTS update_user_score_on_vote ON QuestionVote;
+DROP TRIGGER IF EXISTS update_user_score_on_answer_vote ON AnswerVote;
+DROP TRIGGER IF EXISTS update_user_score_on_acceptance ON Answer;
+DROP TRIGGER IF EXISTS trigger_check_author_accept_answer ON Answer;
+DROP TRIGGER IF EXISTS trigger_check_duplicate_report ON Report;
+DROP TRIGGER IF EXISTS trigger_enforce_single_report_association ON Report;
+DROP TRIGGER IF EXISTS trigger_enforce_question_tag_limit ON QuestionTag;
+DROP FUNCTION IF EXISTS question_search_update;
+DROP FUNCTION IF EXISTS tag_search_update;
+DROP FUNCTION IF EXISTS mark_as_edited;
+DROP FUNCTION IF EXISTS prevent_self_interaction;
+DROP FUNCTION IF EXISTS notify_question_author;
+DROP FUNCTION IF EXISTS notify_answer_author;
+DROP FUNCTION IF EXISTS update_reports;
+DROP FUNCTION IF EXISTS update_user_score;
+DROP FUNCTION IF EXISTS check_author_accept_answer;
+DROP FUNCTION IF EXISTS check_duplicate_report;
+DROP FUNCTION IF EXISTS enforce_single_report_association;
+DROP FUNCTION IF EXISTS enforce_question_tag_limit;
+DROP FUNCTION IF EXISTS mark_answer_as_edited;
+
 
 
 CREATE TABLE IF NOT EXISTS Users (
@@ -31,7 +62,7 @@ CREATE TABLE IF NOT EXISTS Users (
 CREATE TABLE IF NOT EXISTS Tag (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
-    creationDate DATE DEFAULT CURRENT_DATE NOT NULL
+    creation_date DATE DEFAULT CURRENT_DATE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Question (
@@ -42,9 +73,8 @@ CREATE TABLE IF NOT EXISTS Question (
     reports INTEGER DEFAULT 0 NOT NULL CONSTRAINT valid_reports CHECK (reports >= 0),
     votes INTEGER DEFAULT 0 NOT NULL,
     edited BOOLEAN DEFAULT FALSE NOT NULL,
-    user_id INTEGER REFERENCES Users(id) ON DELETE CASCADE
+    id_user INTEGER REFERENCES Users(id) ON DELETE SET NULL
 );
-    
 CREATE TABLE IF NOT EXISTS Answer (
     id SERIAL PRIMARY KEY,
     content TEXT NOT NULL,
@@ -53,8 +83,8 @@ CREATE TABLE IF NOT EXISTS Answer (
     votes INTEGER DEFAULT 0 NOT NULL,
     accepted BOOLEAN DEFAULT FALSE NOT NULL,
     edited BOOLEAN DEFAULT FALSE NOT NULL,
-    user_id INTEGER REFERENCES Users(id) ON DELETE CASCADE,
-    question_id INTEGER REFERENCES Question(id) ON DELETE CASCADE
+    id_user INTEGER REFERENCES Users(id) ON DELETE SET NULL,
+    id_question INTEGER REFERENCES Question(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Comment (
@@ -63,25 +93,39 @@ CREATE TABLE IF NOT EXISTS Comment (
     date DATE DEFAULT CURRENT_DATE NOT NULL,
     reports INTEGER DEFAULT 0 NOT NULL CONSTRAINT valid_reports CHECK (reports >= 0),
     edited BOOLEAN DEFAULT FALSE NOT NULL,
-    user_id INTEGER REFERENCES Users(id) ON DELETE CASCADE,
-    question_id INTEGER REFERENCES Question(id) ON DELETE CASCADE,
-    answer_id INTEGER REFERENCES Answer(id) ON DELETE CASCADE,
-    CONSTRAINT valid_comment CHECK ((question_id IS NOT NULL AND answer_id IS NULL) OR (question_id IS NULL AND answer_id IS NOT NULL))
+    id_user INTEGER REFERENCES Users(id) ON DELETE SET NULL,
+    id_question INTEGER REFERENCES Question(id) ON DELETE CASCADE,
+    id_answer INTEGER REFERENCES Answer(id) ON DELETE CASCADE,
+    CONSTRAINT valid_comment CHECK ((id_question IS NOT NULL AND id_answer IS NULL) OR (id_question IS NULL AND id_answer IS NOT NULL))
+);
+
+CREATE TABLE IF NOT EXISTS QuestionVote (
+    id SERIAL PRIMARY KEY,
+    id_user INTEGER REFERENCES Users(id) ON DELETE CASCADE,
+    id_question INTEGER REFERENCES Question(id) ON DELETE CASCADE,
+    value INTEGER CONSTRAINT valid_vote CHECK (value = 1 OR value = -1)
+);
+
+CREATE TABLE IF NOT EXISTS AnswerVote (
+    id SERIAL PRIMARY KEY,
+    id_user INTEGER REFERENCES Users(id) ON DELETE CASCADE,
+    id_answer INTEGER REFERENCES Answer(id) ON DELETE CASCADE,
+    value INTEGER CONSTRAINT valid_vote CHECK (value = 1 OR value = -1)
 );
 
 CREATE TABLE IF NOT EXISTS Notification (
     id SERIAL PRIMARY KEY,
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     viewed BOOLEAN DEFAULT FALSE NOT NULL,
-    user_id INTEGER REFERENCES Users(id) ON DELETE CASCADE,
-    answer_id INTEGER REFERENCES Answer(id) ON DELETE CASCADE,
-    comment_id INTEGER REFERENCES Comment(id) ON DELETE CASCADE,
-    question_vote_id INTEGER REFERENCES QuestionVote(id) ON DELETE CASCADE,
-    answer_vote_id INTEGER REFERENCES AnswerVote(id) ON DELETE CASCADE,
-    CONSTRAINT valid_notification CHECK ((answer_id IS NOT NULL AND comment_id IS NULL AND question_vote_id IS NULL AND answer_vote_id IS NULL) 
-    OR (answer_id IS NULL AND comment_id IS NOT NULL AND question_vote_id IS NULL AND answer_vote_id IS NULL) 
-    OR (answer_id IS NULL AND comment_id IS NULL AND question_vote_id IS NOT NULL AND answer_vote_id IS NULL) 
-    OR (answer_id IS NULL AND comment_id IS NULL AND question_vote_id IS NULL AND answer_vote_id IS NOT NULL))
+    id_user INTEGER REFERENCES Users(id) ON DELETE CASCADE,
+    id_answer INTEGER REFERENCES Answer(id) ON DELETE CASCADE,
+    id_comment INTEGER REFERENCES Comment(id) ON DELETE CASCADE,
+    id_question_vote INTEGER REFERENCES QuestionVote(id) ON DELETE CASCADE,
+    id_answer_vote INTEGER REFERENCES AnswerVote(id) ON DELETE CASCADE,
+    CONSTRAINT valid_notification CHECK ((id_answer IS NOT NULL AND id_comment IS NULL AND id_question_vote IS NULL AND id_answer_vote IS NULL) 
+    OR (id_answer IS NULL AND id_comment IS NOT NULL AND id_question_vote IS NULL AND id_answer_vote IS NULL) 
+    OR (id_answer IS NULL AND id_comment IS NULL AND id_question_vote IS NOT NULL AND id_answer_vote IS NULL) 
+    OR (id_answer IS NULL AND id_comment IS NULL AND id_question_vote IS NULL AND id_answer_vote IS NOT NULL))
 );
 
 CREATE TABLE IF NOT EXISTS Report (
@@ -89,47 +133,368 @@ CREATE TABLE IF NOT EXISTS Report (
     content TEXT NOT NULL,
     date DATE DEFAULT CURRENT_DATE NOT NULL,
     viewed BOOLEAN DEFAULT FALSE NOT NULL,
-    author_id INTEGER REFERENCES Users(id) ON DELETE CASCADE,
-    question_id INTEGER REFERENCES Question(id) ON DELETE CASCADE,
-    answer_id INTEGER REFERENCES Answer(id) ON DELETE CASCADE,
-    comment_id INTEGER REFERENCES Comment(id) ON DELETE CASCADE,
-    CONSTRAINT valid_report CHECK ((question_id IS NOT NULL AND answer_id IS NULL AND comment_id IS NULL) OR (question_id IS NULL AND answer_id IS NOT NULL AND comment_id IS NULL) OR (question_id IS NULL AND answer_id IS NULL AND comment_id IS NOT NULL))
+    id_user INTEGER REFERENCES Users(id) ON DELETE CASCADE,
+    id_question INTEGER REFERENCES Question(id) ON DELETE CASCADE,
+    id_answer INTEGER REFERENCES Answer(id) ON DELETE CASCADE,
+    id_comment INTEGER REFERENCES Comment(id) ON DELETE CASCADE,
+    CONSTRAINT valid_report CHECK ((id_question IS NOT NULL AND id_answer IS NULL AND id_comment IS NULL) OR (id_question IS NULL AND id_answer IS NOT NULL AND id_comment IS NULL) OR (id_question IS NULL AND id_answer IS NULL AND id_comment IS NOT NULL))
 );
 
 
 CREATE TABLE IF NOT EXISTS FollowTag (
-    user_id INTEGER REFERENCES Users(id) ON DELETE CASCADE,
-    tag_name VARCHAR(255) REFERENCES Tag(name) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, tag_name)
+    id_user INTEGER REFERENCES Users(id) ON DELETE CASCADE,
+    id_tag INTEGER REFERENCES Tag(id) ON DELETE CASCADE,
+    PRIMARY KEY (id_user, id_tag)
 );
 
 CREATE TABLE IF NOT EXISTS FollowQuestion (
-    user_id INTEGER REFERENCES Users(id) ON DELETE CASCADE,
-    question_id INTEGER REFERENCES Question(id) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, question_id)
+    id_user INTEGER REFERENCES Users(id) ON DELETE CASCADE,
+    id_question INTEGER REFERENCES Question(id) ON DELETE CASCADE,
+    PRIMARY KEY (id_user, id_question)
 );
 
-CREATE TABLE IF NOT EXISTS QuestionVote (
-    user_id INTEGER REFERENCES Users(id) ON DELETE CASCADE,
-    question_id INTEGER REFERENCES Question(id) ON DELETE CASCADE,
-    value INTEGER CONSTRAINT valid_vote CHECK (value = 1 OR value = -1),
-    PRIMARY KEY (user_id, question_id)
-);
-
-CREATE TABLE IF NOT EXISTS AnswerVote (
-    user_id INTEGER REFERENCES Users(id) ON DELETE CASCADE,
-    answer_id INTEGER REFERENCES Answer(id) ON DELETE CASCADE,
-    value INTEGER CONSTRAINT valid_vote CHECK (value = 1 OR value = -1),
-    PRIMARY KEY (user_id, answer_id)
-);
 
 CREATE TABLE IF NOT EXISTS Image (
     id SERIAL PRIMARY KEY,
     imagePath VARCHAR(255) NOT NULL,
-    user_id INTEGER REFERENCES Users(id) ON DELETE CASCADE,
-    question_id INTEGER REFERENCES Question(id) ON DELETE CASCADE,
-    CONSTRAINT valid_image CHECK ((question_id IS NOT NULL AND user_id IS NULL) OR (question_id IS NULL AND user_id IS NOT NULL)) --This not in the relational schema (either remove or add to relational schema)
+    id_user INTEGER REFERENCES Users(id) ON DELETE CASCADE,
+    id_question INTEGER REFERENCES Question(id) ON DELETE CASCADE,
+    CONSTRAINT valid_image CHECK ((id_question IS NOT NULL AND id_user IS NULL) OR (id_question IS NULL AND id_user IS NOT NULL)) --This not in the relational schema (either remove or add to relational schema)
 );
+
+CREATE TABLE IF NOT EXISTS QuestionTag (
+    id_question INTEGER REFERENCES Question(id) ON DELETE CASCADE,
+    id_tag INTEGER REFERENCES Tag(id) ON DELETE CASCADE,
+    PRIMARY KEY (id_question, id_tag)
+);
+
+-- Add column to the Question table to store ts_vectors.
+ALTER TABLE Question
+ADD COLUMN tsvectors TSVECTOR;
+
+-- Create a function to automatically update the ts_vectors.
+CREATE FUNCTION question_search_update() RETURNS TRIGGER AS $$
+BEGIN
+ IF TG_OP = 'INSERT' THEN
+        NEW.tsvectors = (
+         setweight(to_tsvector('english', NEW.title), 'A') ||
+         setweight(to_tsvector('english', NEW.content), 'B')
+        );
+ END IF;
+ IF TG_OP = 'UPDATE' THEN
+         IF (NEW.title <> OLD.title OR NEW.content <> OLD.content) THEN
+           NEW.tsvectors = (
+             setweight(to_tsvector('english', NEW.title), 'A') ||
+             setweight(to_tsvector('english', NEW.content), 'B')
+           );
+         END IF;
+ END IF;
+ RETURN NEW;
+END $$
+LANGUAGE plpgsql;
+
+-- Create a trigger before inserting or updating in the Question table.
+CREATE TRIGGER question_search_update
+ BEFORE INSERT OR UPDATE ON Question
+ FOR EACH ROW
+ EXECUTE PROCEDURE question_search_update();
+
+-- Create the GIN index for the ts_vectors.
+CREATE INDEX question_search_idx ON Question USING GIN (tsvectors); 
+
+
+ALTER TABLE Tag
+ADD COLUMN tsvectors TSVECTOR;
+
+-- Create a function to automatically update the ts_vectors.
+CREATE FUNCTION tag_search_update() RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        NEW.tsvectors = (
+            setweight(to_tsvector('english', NEW.name), 'A') ||
+            setweight(to_tsvector('english', NEW.creation_date::text), 'B')
+        );
+    END IF;
+    IF TG_OP = 'UPDATE' THEN
+        IF (NEW.name <> OLD.name OR NEW.creation_date <> OLD.creation_date) THEN
+            NEW.tsvectors = (
+                setweight(to_tsvector('english', NEW.name), 'A') ||
+                setweight(to_tsvector('english', NEW.creation_date::text), 'B')
+            );
+        END IF;
+    END IF;
+    RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+-- Create a trigger before inserting or updating in the Tag table.
+CREATE TRIGGER tag_search_update
+BEFORE INSERT OR UPDATE ON tag
+FOR EACH ROW
+EXECUTE PROCEDURE tag_search_update();
+
+-- Create the GIN index for the ts_vectors.
+CREATE INDEX search_idx ON Tag USING GIN (tsvectors);
+
+
+CREATE FUNCTION mark_question_as_edited() RETURNS TRIGGER AS $$
+BEGIN
+IF TG_OP = 'UPDATE' THEN
+IF (NEW.content <> OLD.content OR NEW.title <> OLD.title) THEN
+NEW.edited = TRUE;
+NEW.date = NOW(); -- Atualizar a data de edição
+END IF;
+END IF;
+RETURN NEW;
+END $$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER question_edited
+BEFORE UPDATE ON Question
+FOR EACH ROW
+EXECUTE PROCEDURE mark_question_as_edited();
+
+
+CREATE FUNCTION mark_answer_comment_as_edited() RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'UPDATE' THEN
+        IF (NEW.content <> OLD.content) THEN
+            NEW.edited = TRUE;
+            NEW.date = NOW(); -- Update the edit date
+        END IF;
+    END IF;
+    RETURN NEW;
+END $$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER answer_edited
+BEFORE UPDATE ON Answer
+FOR EACH ROW
+EXECUTE PROCEDURE mark_answer_comment_as_edited();
+
+CREATE TRIGGER comment_edited
+BEFORE UPDATE ON Comment
+FOR EACH ROW
+EXECUTE PROCEDURE mark_answer_comment_as_edited();
+
+
+CREATE FUNCTION prevent_self_interaction() RETURNS TRIGGER AS $$
+DECLARE
+    post_id_user INTEGER;
+BEGIN
+IF TG_TABLE_NAME = 'Comment' THEN
+        SELECT id_user INTO post_id_user FROM Question WHERE id = NEW.id_question;
+ELSIF TG_TABLE_NAME = 'Answer' THEN
+        SELECT id_user INTO post_id_user FROM Question WHERE id = NEW.id_question;
+END IF;
+
+IF NEW.id_user = post_id_user THEN
+RAISE EXCEPTION 'Users cannot review or comment their own posts';
+END IF;
+RETURN NEW;
+END $$
+LANGUAGE plpgsql;
+  
+CREATE TRIGGER prevent_self_comment
+BEFORE INSERT ON Comment
+FOR EACH ROW
+EXECUTE PROCEDURE prevent_self_interaction();
+  
+CREATE TRIGGER prevent_self_answer
+BEFORE INSERT ON Answer
+FOR EACH ROW
+EXECUTE PROCEDURE prevent_self_interaction();
+
+
+CREATE FUNCTION notify_question_author() RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO Notification (date, viewed, id_user, id_answer, id_comment, id_question_vote, id_answer_vote)
+    VALUES (
+        NOW(),                    -- Data da notificação
+        FALSE,                    -- Notificação não lida
+        (SELECT id_user FROM Question WHERE id = NEW.id_question),  -- Autor da pergunta
+        NEW.id,                   -- id_answer refere-se à nova resposta
+        NULL,                     -- id_comment é NULL porque não se aplica
+        NULL,                     -- id_question_vote é NULL porque não se aplica
+        NULL                      -- id_answer_vote é NULL porque não se aplica
+    );
+    RETURN NEW;
+END $$ 
+LANGUAGE plpgsql;
+
+CREATE TRIGGER answer_notification
+AFTER INSERT ON Answer
+FOR EACH ROW
+EXECUTE FUNCTION notify_question_author();
+
+
+CREATE FUNCTION notify_answer_author() RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO Notification (date, viewed, id_user, id_answer, id_comment, id_question_vote, id_answer_vote)
+    VALUES (
+        NOW(),                    -- Data da notificação
+        FALSE,                    -- Notificação não lida
+        (SELECT id_user FROM Answer WHERE id = NEW.id_answer),  -- Autor da resposta
+        NULL,                     -- id_answer é NULL porque não se aplica
+        NEW.id,                   -- id_comment refere-se ao novo comentário
+        NULL,                     -- id_question_vote é NULL porque não se aplica
+        NULL                      -- id_answer_vote é NULL porque não se aplica
+    );
+    RETURN NEW;
+END $$ 
+LANGUAGE plpgsql;
+
+CREATE TRIGGER comment_notification
+AFTER INSERT ON Comment
+FOR EACH ROW
+EXECUTE FUNCTION notify_answer_author();
+
+
+CREATE FUNCTION update_reports() RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.id_question IS NOT NULL THEN
+        UPDATE Question
+        SET reports = reports + 1
+        WHERE id = NEW.id_question;
+    ELSIF NEW.id_answer IS NOT NULL THEN
+        UPDATE Answer
+        SET reports = reports + 1
+        WHERE id = NEW.id_answer;
+    ELSIF NEW.id_comment IS NOT NULL THEN
+        UPDATE Comment
+        SET reports = reports + 1
+        WHERE id = NEW.id_comment;
+    END IF;
+    RETURN NEW;
+END $$ 
+LANGUAGE plpgsql;
+
+CREATE TRIGGER update_reports_count
+AFTER INSERT ON Report
+FOR EACH ROW
+EXECUTE PROCEDURE update_reports();
+
+
+CREATE FUNCTION update_user_score() RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'UPDATE' AND NEW.votes > OLD.votes THEN
+        IF NEW.votes - OLD.votes > 0 THEN
+            UPDATE Users SET score = score + 10 WHERE id = NEW.id_user;  -- Voto positivo
+        ELSE
+            UPDATE Users SET score = score - 2 WHERE id = NEW.id_user;   -- Voto negativo
+        END IF;
+    ELSIF NEW.accepted = TRUE THEN
+        UPDATE Users SET score = score + 15 WHERE id = NEW.id_user;  -- Resposta aceita
+        UPDATE Users SET score = score + 2 WHERE id = (SELECT id_user FROM Question WHERE id = NEW.id_question);  -- Usuário que fez a pergunta
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE Users SET score = score - 100 WHERE id = OLD.id_user;  -- Penalização
+    END IF;
+    RETURN NEW;
+END $$ 
+LANGUAGE plpgsql;
+
+CREATE TRIGGER update_user_score_on_vote
+AFTER INSERT OR UPDATE ON QuestionVote
+FOR EACH ROW
+EXECUTE PROCEDURE update_user_score();
+
+CREATE TRIGGER update_user_score_on_answer_vote
+AFTER INSERT OR UPDATE ON AnswerVote
+FOR EACH ROW
+EXECUTE PROCEDURE update_user_score();
+
+CREATE TRIGGER update_user_score_on_acceptance
+AFTER UPDATE ON Answer
+FOR EACH ROW
+WHEN (NEW.accepted = TRUE)
+EXECUTE PROCEDURE update_user_score();
+
+
+CREATE OR REPLACE FUNCTION check_author_accept_answer() 
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Verificar se o utilizador que tenta marcar a resposta como aceita é o autor da pergunta
+    IF NEW.accepted = TRUE THEN
+        PERFORM 1 
+        FROM Question 
+        WHERE id = NEW.id_question AND id_user = NEW.id_user;
+
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'Only the author of the question can accept an answer';
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_check_author_accept_answer
+BEFORE UPDATE OF accepted ON Answer
+FOR EACH ROW
+WHEN (OLD.accepted = FALSE AND NEW.accepted = TRUE)
+EXECUTE FUNCTION check_author_accept_answer();
+
+
+CREATE OR REPLACE FUNCTION check_duplicate_report() 
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Verificar se já existe um report do mesmo utilizador para a mesma entidade
+    IF EXISTS (
+        SELECT 1
+        FROM Report
+        WHERE id_user = NEW.id_user 
+        AND (
+            (id_question IS NOT NULL AND id_question = NEW.id_question) OR 
+            (id_answer IS NOT NULL AND id_answer = NEW.id_answer) OR 
+            (id_comment IS NOT NULL AND id_comment = NEW.id_comment)
+        )
+    ) THEN
+        RAISE EXCEPTION 'User cannot report the same entity more than once';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_check_duplicate_report
+BEFORE INSERT ON Report
+FOR EACH ROW
+EXECUTE FUNCTION check_duplicate_report();
+
+
+CREATE OR REPLACE FUNCTION enforce_single_report_association() 
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Verificar se o report está associado a apenas uma entidade
+    IF (NEW.id_answer IS NOT NULL)::int + (NEW.id_comment IS NOT NULL)::int + (NEW.id_question IS NOT NULL)::int <> 1 THEN
+        RAISE EXCEPTION 'A report must be associated with only one of: answer, comment, or question';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_enforce_single_report_association
+BEFORE INSERT OR UPDATE ON Report
+FOR EACH ROW
+EXECUTE FUNCTION enforce_single_report_association();
+
+
+CREATE OR REPLACE FUNCTION enforce_question_tag_limit() 
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Verificar o número de tags associadas à pergunta
+    IF (SELECT COUNT(*) FROM QuestionTag WHERE id_question = NEW.id_question) >= 5 THEN
+        RAISE EXCEPTION 'A question can be associated with a maximum of 5 tags';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_enforce_question_tag_limit
+BEFORE INSERT ON QuestionTag
+FOR EACH ROW
+EXECUTE FUNCTION enforce_question_tag_limit();
 
 
 
@@ -148,30 +513,30 @@ INSERT INTO Tag (name) VALUES
 ('tag2'),
 ('tag3');
 
-INSERT INTO Question (title, content, date, reports, votes, edited, user_id) VALUES
+INSERT INTO Question (title, content, date, reports, votes, edited, id_user) VALUES
 ('Question 1', 'Content of question 1', '2023-01-01', 0, 5, FALSE, 1), -- Question by user_with_questions
 ('Question 2', 'Content of question 2', '2023-02-02', 0, 3, FALSE, 3), -- Question by user_with_both
 ('Edited Question', 'Content of edited question', '2023-03-01', 0, 10, TRUE, 1), -- Edited question by user_with_questions
 ('Question by banned_user', 'Content of question by banned_user', '2023-04-01', 3, -2, FALSE, 7); -- Question by banned_user with multiple reports
 
-INSERT INTO Answer (content, date, reports, votes, accepted, edited, user_id, question_id) VALUES
+INSERT INTO Answer (content, date, reports, votes, accepted, edited, id_user, id_question) VALUES
 ('Answer 1 to question 1', '2023-01-02', 0, 2, FALSE, FALSE, 2, 1), -- Answer by user_with_answers
 ('Answer 2 to question 2', '2023-02-03', 0, 4, TRUE, FALSE, 3, 2), -- Answer by user_with_both
 ('Edited Answer', '2023-03-02', 0, 8, FALSE, TRUE, 2, 1); -- Edited answer by user_with_answers
 
-INSERT INTO Comment (content, date, reports, edited, user_id, question_id, answer_id) VALUES
+INSERT INTO Comment (content, date, reports, edited, id_user, id_question, id_answer) VALUES
 ('Comment on question 1', '2023-01-03', 0, FALSE, 3, 1, NULL), -- Comment by user_with_both on question 1
 ('Comment on answer 1', '2023-01-04', 0, FALSE, 1, NULL, 1); -- Comment by user_with_questions on answer 1
 
-INSERT INTO Notification (title, content, date, read, type, user_id, answer_id, comment_id) VALUES
-('Notification 1', 'Content of notification 1', '2023-01-05 10:00:00', FALSE, 'type1', 4, NULL, NULL), -- Notification for user_with_notifications
-('Notification 2', 'Content of notification 2', '2023-01-06 11:00:00', TRUE, 'type2', 4, 1, NULL); -- Notification for user_with_notifications related to answer 1
+INSERT INTO Notification (date, viewed, id_user, id_answer, id_comment, id_question_vote, id_answer_vote) VALUES
+('2023-01-05 10:00:00', FALSE, 4, 1, NULL, NULL, NULL), -- Notification for user_with_notifications
+('2023-01-06 11:00:00', TRUE, 4, 1, NULL, NULL, NULL); -- Notification for user_with_notifications related to answer 1
 
-INSERT INTO FollowTag (user_id, tag_name) VALUES
-(5, 'tag1'), -- user_follow_tags following tag1
-(5, 'tag2'); -- user_follow_tags following tag2
+INSERT INTO FollowTag (id_user, id_tag) VALUES
+(5, 1), -- user_follow_tags following tag1
+(5, 2); -- user_follow_tags following tag2
 
-INSERT INTO Report (content, date, viewed, author_id, question_id, answer_id, comment_id) VALUES
+INSERT INTO Report (content, date, viewed, id_user, id_question, id_answer, id_comment) VALUES
 ('Report on question 1', '2023-01-07', FALSE, 6, 1, NULL, NULL), -- Report by user_with_reports on question 1
 ('Report on answer 1', '2023-01-08', FALSE, 6, NULL, 1, NULL), -- Report by user_with_reports on answer 1
 ('Report on comment 1', '2023-01-09', FALSE, 6, NULL, NULL, 1), -- Report by user_with_reports on comment 1
@@ -276,206 +641,206 @@ insert into Users (admin, username, name, email, bio, birthdate, password, signU
 insert into Users (admin, username, name, email, bio, birthdate, password, signUpDate, ban, score) values (true, 'cgerbi2r', 'Celestine Gerbi', 'cgerbi2r@bluehost.com', 'Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat. Nulla tempus.', '1925-06-11', 'kR5.1zn8B}T', '2024-11-02', true, 0);
 
 
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Phasellus in felis.', 'Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', '2024-11-03', 29, -44, false, 4);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus.', 'In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh.', '2024-11-04', 44, 190, false, 53);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Proin leo odio, porttitor id, consequat in, consequat ut, nulla.', 'Nulla ut erat id mauris vulputate elementum. Nullam varius.', '2024-11-04', 75, -301, true, 80);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla.', 'In hac habitasse platea dictumst. Etiam faucibus cursus urna. Ut tellus.', '2024-11-04', 59, 292, true, 72);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('In eleifend quam a odio.', 'Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi.', '2024-11-01', 54, 359, true, 2);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Duis aliquam convallis nunc.', 'In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti. In eleifend quam a odio.', '2024-11-04', 43, 198, true, 45);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.', 'In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem. Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum. Morbi non quam nec dui luctus rutrum.', '2024-11-02', 8, 966, true, 11);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Donec quis orci eget orci vehicula condimentum.', 'Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque. Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus. Phasellus in felis.', '2024-11-04', 59, 50, false, 26);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo.', 'In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem. Duis aliquam convallis nunc.', '2024-11-01', 27, -699, false, 37);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi.', 'Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante.', '2024-11-02', 94, -659, true, 99);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Praesent id massa id nisl venenatis lacinia.', 'Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue.', '2024-11-03', 65, 576, true, 98);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', 'Nunc rhoncus dui vel sem. Sed sagittis.', '2024-11-04', 94, 447, true, 57);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla.', 'Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis. Duis consequat dui nec nisi volutpat eleifend.', '2024-11-04', 29, 882, false, 8);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('In eleifend quam a odio.', 'Maecenas pulvinar lobortis est. Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi. Nulla ac enim.', '2024-11-02', 92, -891, false, 39);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nam nulla.', 'Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum.', '2024-11-04', 94, -817, false, 60);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Morbi quis tortor id nulla ultrices aliquet.', 'Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti. Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris.', '2024-11-04', 68, -713, true, 50);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Vivamus vel nulla eget eros elementum pellentesque.', 'Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat.', '2024-11-03', 24, 45, false, 94);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('In hac habitasse platea dictumst.', 'Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula.', '2024-11-03', 39, 757, false, 49);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Pellentesque ultrices mattis odio.', 'In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante.', '2024-11-04', 56, 629, true, 98);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Cras in purus eu magna vulputate luctus.', 'Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue. Etiam justo. Etiam pretium iaculis justo. In hac habitasse platea dictumst. Etiam faucibus cursus urna.', '2024-11-04', 96, -635, true, 87);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus.', 'Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim.', '2024-11-04', 43, -987, false, 52);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam.', 'Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo.', '2024-11-03', 78, -635, true, 98);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Suspendisse potenti.', 'Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante.', '2024-11-04', 94, -716, true, 83);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('In hac habitasse platea dictumst.', 'In blandit ultrices enim.', '2024-11-02', 80, -502, true, 37);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Praesent id massa id nisl venenatis lacinia.', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin risus. Praesent lectus. Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis. Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis.', '2024-11-02', 63, 748, true, 54);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nam tristique tortor eu pede.', 'Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio.', '2024-11-02', 55, -231, true, 91);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Vestibulum ac est lacinia nisi venenatis tristique.', 'Nulla tellus. In sagittis dui vel nisl.', '2024-11-01', 91, -503, false, 85);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue.', 'Nullam varius. Nulla facilisi. Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque.', '2024-11-03', 29, -112, true, 14);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Morbi a ipsum.', 'Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti. Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris. Morbi non lectus.', '2024-11-02', 47, -28, true, 35);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', 'Proin leo odio, porttitor id, consequat in, consequat ut, nulla. Sed accumsan felis. Ut at dolor quis odio consequat varius. Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi. Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus.', '2024-11-01', 12, -385, false, 27);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Praesent blandit.', 'Nulla facilisi. Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit.', '2024-11-03', 3, -953, true, 75);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo.', 'Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', '2024-11-01', 25, 46, false, 5);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl.', 'Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique.', '2024-11-02', 1, -855, false, 68);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Suspendisse potenti.', 'Proin leo odio, porttitor id, consequat in, consequat ut, nulla. Sed accumsan felis. Ut at dolor quis odio consequat varius.', '2024-11-03', 79, 695, false, 98);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Mauris sit amet eros.', 'In congue.', '2024-11-02', 42, 22, false, 5);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nam dui.', 'Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros.', '2024-11-01', 16, -603, false, 96);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Quisque id justo sit amet sapien dignissim vestibulum.', 'Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum.', '2024-11-02', 69, -383, false, 94);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo.', 'Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque.', '2024-11-02', 1, 110, false, 6);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Suspendisse accumsan tortor quis turpis.', 'Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque.', '2024-11-04', 72, -661, false, 44);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Donec ut dolor.', 'In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat.', '2024-11-03', 18, 241, false, 1);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Suspendisse ornare consequat lectus.', 'Ut tellus. Nulla ut erat id mauris vulputate elementum. Nullam varius. Nulla facilisi. Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque. Quisque porta volutpat erat.', '2024-11-03', 95, -932, false, 8);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nulla ut erat id mauris vulputate elementum.', 'Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue.', '2024-11-03', 33, 315, false, 23);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Phasellus sit amet erat.', 'Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', '2024-11-01', 7, -180, true, 75);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Mauris lacinia sapien quis libero.', 'Nunc purus. Phasellus in felis. Donec semper sapien a libero. Nam dui.', '2024-11-03', 83, -983, false, 21);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nam dui.', 'In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa.', '2024-11-01', 85, 436, true, 52);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh.', 'Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo.', '2024-11-02', 49, 215, true, 41);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('In blandit ultrices enim.', 'Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl.', '2024-11-01', 74, -307, true, 72);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Pellentesque at nulla.', 'Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', '2024-11-01', 46, 444, false, 14);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Aliquam quis turpis eget elit sodales scelerisque.', 'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo.', '2024-11-02', 65, 843, false, 14);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('In hac habitasse platea dictumst.', 'Nulla facilisi. Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit.', '2024-11-01', 6, -301, false, 56);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc.', 'Suspendisse potenti.', '2024-11-01', 56, 803, true, 90);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('In est risus, auctor sed, tristique in, tempus sit amet, sem.', 'Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl.', '2024-11-04', 4, -18, false, 86);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nam tristique tortor eu pede.', 'Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin interdum mauris non ligula pellentesque ultrices.', '2024-11-03', 19, 348, true, 77);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam.', 'Donec posuere metus vitae ipsum. Aliquam non mauris. Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet.', '2024-11-02', 78, 263, false, 86);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Praesent blandit.', 'Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue. Etiam justo. Etiam pretium iaculis justo. In hac habitasse platea dictumst. Etiam faucibus cursus urna.', '2024-11-03', 99, -955, true, 42);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Aliquam quis turpis eget elit sodales scelerisque.', 'Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis. Fusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla.', '2024-11-04', 7, 357, false, 52);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Cras pellentesque volutpat dui.', 'In congue. Etiam justo. Etiam pretium iaculis justo. In hac habitasse platea dictumst. Etiam faucibus cursus urna. Ut tellus. Nulla ut erat id mauris vulputate elementum. Nullam varius.', '2024-11-01', 99, 74, true, 19);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi.', 'Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', '2024-11-04', 21, 140, false, 45);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Donec vitae nisi.', 'Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis.', '2024-11-03', 45, -657, true, 37);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Cras in purus eu magna vulputate luctus.', 'In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam.', '2024-11-03', 27, 808, false, 88);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl.', 'Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus.', '2024-11-02', 47, 917, true, 85);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Sed vel enim sit amet nunc viverra dapibus.', 'Nam dui. Proin leo odio, porttitor id, consequat in, consequat ut, nulla. Sed accumsan felis. Ut at dolor quis odio consequat varius. Integer ac leo.', '2024-11-03', 24, -583, true, 32);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Pellentesque eget nunc.', 'In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus.', '2024-11-01', 75, 829, false, 69);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nulla mollis molestie lorem.', 'Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat.', '2024-11-01', 77, 661, true, 18);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Vivamus vestibulum sagittis sapien.', 'Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem. Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue.', '2024-11-02', 13, -168, false, 25);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Proin at turpis a pede posuere nonummy.', 'Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros.', '2024-11-02', 80, -116, false, 12);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 'Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros.', '2024-11-02', 47, -613, true, 51);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Quisque porta volutpat erat.', 'Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus. In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti. In eleifend quam a odio.', '2024-11-02', 91, -192, true, 15);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci.', 'Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc.', '2024-11-04', 5, 473, false, 94);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est.', 'Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit.', '2024-11-04', 51, 459, true, 85);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nullam porttitor lacus at turpis.', 'Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst.', '2024-11-01', 47, 707, false, 66);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Maecenas pulvinar lobortis est.', 'Cras pellentesque volutpat dui.', '2024-11-01', 82, -942, false, 20);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Duis bibendum.', 'Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem.', '2024-11-02', 76, -595, true, 58);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('In sagittis dui vel nisl.', 'Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', '2024-11-04', 1, -75, false, 59);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nulla ut erat id mauris vulputate elementum.', 'Sed ante. Vivamus tortor. Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique.', '2024-11-04', 50, 594, false, 39);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nullam varius.', 'Proin at turpis a pede posuere nonummy. Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi.', '2024-11-01', 15, 249, true, 39);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nullam sit amet turpis elementum ligula vehicula consequat.', 'Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus. In sagittis dui vel nisl. Duis ac nibh.', '2024-11-02', 80, 818, true, 38);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue.', 'Suspendisse accumsan tortor quis turpis. Sed ante.', '2024-11-04', 47, -450, false, 94);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Etiam justo.', 'In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat.', '2024-11-03', 54, -837, true, 80);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Duis bibendum.', 'Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus.', '2024-11-02', 46, -91, true, 56);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Vivamus vel nulla eget eros elementum pellentesque.', 'Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui.', '2024-11-02', 19, 973, true, 5);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('In hac habitasse platea dictumst.', 'Duis ac nibh.', '2024-11-01', 81, -743, true, 79);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Fusce consequat.', 'Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue.', '2024-11-02', 60, -359, false, 84);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.', 'Sed accumsan felis. Ut at dolor quis odio consequat varius. Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi. Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus. Curabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla.', '2024-11-01', 44, 184, true, 85);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Proin leo odio, porttitor id, consequat in, consequat ut, nulla.', 'Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo.', '2024-11-04', 39, -61, true, 54);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.', 'Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque. Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus. Phasellus in felis. Donec semper sapien a libero.', '2024-11-02', 36, 52, false, 49);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci.', 'Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', '2024-11-02', 31, -550, true, 53);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh.', 'Aliquam erat volutpat. In congue. Etiam justo. Etiam pretium iaculis justo.', '2024-11-03', 92, -663, true, 78);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Pellentesque eget nunc.', 'Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis.', '2024-11-01', 14, 890, true, 73);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Suspendisse potenti.', 'Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti.', '2024-11-04', 53, 490, true, 32);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa.', 'Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo.', '2024-11-03', 80, -393, true, 28);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Donec dapibus.', 'Nulla tellus. In sagittis dui vel nisl.', '2024-11-04', 98, 542, true, 97);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Curabitur gravida nisi at nibh.', 'In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt.', '2024-11-04', 5, -193, true, 19);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Integer non velit.', 'Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero.', '2024-11-04', 97, -285, true, 21);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nulla mollis molestie lorem.', 'Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis. Fusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti.', '2024-11-03', 35, 336, true, 35);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Aenean auctor gravida sem.', 'Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem.', '2024-11-01', 39, 518, true, 31);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Duis consequat dui nec nisi volutpat eleifend.', 'Proin risus. Praesent lectus. Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis.', '2024-11-02', 60, 942, true, 9);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Etiam pretium iaculis justo.', 'Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio.', '2024-11-02', 77, -801, false, 15);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Nullam molestie nibh in lectus.', 'Quisque ut erat.', '2024-11-01', 26, -305, true, 90);
-insert into Question (title, content, date, reports, votes, edited, user_id) values ('Praesent blandit lacinia erat.', 'Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi. Nulla ac enim.', '2024-11-03', 75, 895, true, 85);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Phasellus in felis.', 'Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', '2024-11-03', 29, -44, false, 4);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus.', 'In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh.', '2024-11-04', 44, 190, false, 53);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Proin leo odio, porttitor id, consequat in, consequat ut, nulla.', 'Nulla ut erat id mauris vulputate elementum. Nullam varius.', '2024-11-04', 75, -301, true, 80);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla.', 'In hac habitasse platea dictumst. Etiam faucibus cursus urna. Ut tellus.', '2024-11-04', 59, 292, true, 72);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('In eleifend quam a odio.', 'Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi.', '2024-11-01', 54, 359, true, 2);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Duis aliquam convallis nunc.', 'In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti. In eleifend quam a odio.', '2024-11-04', 43, 198, true, 45);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.', 'In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem. Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum. Morbi non quam nec dui luctus rutrum.', '2024-11-02', 8, 966, true, 11);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Donec quis orci eget orci vehicula condimentum.', 'Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque. Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus. Phasellus in felis.', '2024-11-04', 59, 50, false, 26);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo.', 'In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem. Duis aliquam convallis nunc.', '2024-11-01', 27, -699, false, 37);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi.', 'Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante.', '2024-11-02', 94, -659, true, 99);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Praesent id massa id nisl venenatis lacinia.', 'Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue.', '2024-11-03', 65, 576, true, 98);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', 'Nunc rhoncus dui vel sem. Sed sagittis.', '2024-11-04', 94, 447, true, 57);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla.', 'Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis. Duis consequat dui nec nisi volutpat eleifend.', '2024-11-04', 29, 882, false, 8);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('In eleifend quam a odio.', 'Maecenas pulvinar lobortis est. Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi. Nulla ac enim.', '2024-11-02', 92, -891, false, 39);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nam nulla.', 'Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum.', '2024-11-04', 94, -817, false, 60);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Morbi quis tortor id nulla ultrices aliquet.', 'Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti. Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris.', '2024-11-04', 68, -713, true, 50);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Vivamus vel nulla eget eros elementum pellentesque.', 'Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat.', '2024-11-03', 24, 45, false, 94);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('In hac habitasse platea dictumst.', 'Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula.', '2024-11-03', 39, 757, false, 49);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Pellentesque ultrices mattis odio.', 'In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante.', '2024-11-04', 56, 629, true, 98);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Cras in purus eu magna vulputate luctus.', 'Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue. Etiam justo. Etiam pretium iaculis justo. In hac habitasse platea dictumst. Etiam faucibus cursus urna.', '2024-11-04', 96, -635, true, 87);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus.', 'Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim.', '2024-11-04', 43, -987, false, 52);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam.', 'Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo.', '2024-11-03', 78, -635, true, 98);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Suspendisse potenti.', 'Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante.', '2024-11-04', 94, -716, true, 83);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('In hac habitasse platea dictumst.', 'In blandit ultrices enim.', '2024-11-02', 80, -502, true, 37);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Praesent id massa id nisl venenatis lacinia.', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin risus. Praesent lectus. Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis. Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis.', '2024-11-02', 63, 748, true, 54);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nam tristique tortor eu pede.', 'Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio.', '2024-11-02', 55, -231, true, 91);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Vestibulum ac est lacinia nisi venenatis tristique.', 'Nulla tellus. In sagittis dui vel nisl.', '2024-11-01', 91, -503, false, 85);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue.', 'Nullam varius. Nulla facilisi. Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque.', '2024-11-03', 29, -112, true, 14);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Morbi a ipsum.', 'Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti. Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris. Morbi non lectus.', '2024-11-02', 47, -28, true, 35);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', 'Proin leo odio, porttitor id, consequat in, consequat ut, nulla. Sed accumsan felis. Ut at dolor quis odio consequat varius. Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi. Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus.', '2024-11-01', 12, -385, false, 27);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Praesent blandit.', 'Nulla facilisi. Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit.', '2024-11-03', 3, -953, true, 75);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo.', 'Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', '2024-11-01', 25, 46, false, 5);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl.', 'Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique.', '2024-11-02', 1, -855, false, 68);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Suspendisse potenti.', 'Proin leo odio, porttitor id, consequat in, consequat ut, nulla. Sed accumsan felis. Ut at dolor quis odio consequat varius.', '2024-11-03', 79, 695, false, 98);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Mauris sit amet eros.', 'In congue.', '2024-11-02', 42, 22, false, 5);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nam dui.', 'Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros.', '2024-11-01', 16, -603, false, 96);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Quisque id justo sit amet sapien dignissim vestibulum.', 'Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum.', '2024-11-02', 69, -383, false, 94);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo.', 'Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque.', '2024-11-02', 1, 110, false, 6);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Suspendisse accumsan tortor quis turpis.', 'Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque.', '2024-11-04', 72, -661, false, 44);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Donec ut dolor.', 'In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat.', '2024-11-03', 18, 241, false, 1);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Suspendisse ornare consequat lectus.', 'Ut tellus. Nulla ut erat id mauris vulputate elementum. Nullam varius. Nulla facilisi. Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque. Quisque porta volutpat erat.', '2024-11-03', 95, -932, false, 8);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nulla ut erat id mauris vulputate elementum.', 'Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue.', '2024-11-03', 33, 315, false, 23);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Phasellus sit amet erat.', 'Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', '2024-11-01', 7, -180, true, 75);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Mauris lacinia sapien quis libero.', 'Nunc purus. Phasellus in felis. Donec semper sapien a libero. Nam dui.', '2024-11-03', 83, -983, false, 21);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nam dui.', 'In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa.', '2024-11-01', 85, 436, true, 52);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh.', 'Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo.', '2024-11-02', 49, 215, true, 41);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('In blandit ultrices enim.', 'Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl.', '2024-11-01', 74, -307, true, 72);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Pellentesque at nulla.', 'Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', '2024-11-01', 46, 444, false, 14);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Aliquam quis turpis eget elit sodales scelerisque.', 'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo.', '2024-11-02', 65, 843, false, 14);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('In hac habitasse platea dictumst.', 'Nulla facilisi. Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit.', '2024-11-01', 6, -301, false, 56);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc.', 'Suspendisse potenti.', '2024-11-01', 56, 803, true, 90);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('In est risus, auctor sed, tristique in, tempus sit amet, sem.', 'Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl.', '2024-11-04', 4, -18, false, 86);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nam tristique tortor eu pede.', 'Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin interdum mauris non ligula pellentesque ultrices.', '2024-11-03', 19, 348, true, 77);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam.', 'Donec posuere metus vitae ipsum. Aliquam non mauris. Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet.', '2024-11-02', 78, 263, false, 86);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Praesent blandit.', 'Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue. Etiam justo. Etiam pretium iaculis justo. In hac habitasse platea dictumst. Etiam faucibus cursus urna.', '2024-11-03', 99, -955, true, 42);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Aliquam quis turpis eget elit sodales scelerisque.', 'Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis. Fusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla.', '2024-11-04', 7, 357, false, 52);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Cras pellentesque volutpat dui.', 'In congue. Etiam justo. Etiam pretium iaculis justo. In hac habitasse platea dictumst. Etiam faucibus cursus urna. Ut tellus. Nulla ut erat id mauris vulputate elementum. Nullam varius.', '2024-11-01', 99, 74, true, 19);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi.', 'Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', '2024-11-04', 21, 140, false, 45);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Donec vitae nisi.', 'Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis.', '2024-11-03', 45, -657, true, 37);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Cras in purus eu magna vulputate luctus.', 'In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam.', '2024-11-03', 27, 808, false, 88);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl.', 'Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus.', '2024-11-02', 47, 917, true, 85);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Sed vel enim sit amet nunc viverra dapibus.', 'Nam dui. Proin leo odio, porttitor id, consequat in, consequat ut, nulla. Sed accumsan felis. Ut at dolor quis odio consequat varius. Integer ac leo.', '2024-11-03', 24, -583, true, 32);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Pellentesque eget nunc.', 'In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus.', '2024-11-01', 75, 829, false, 69);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nulla mollis molestie lorem.', 'Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat.', '2024-11-01', 77, 661, true, 18);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Vivamus vestibulum sagittis sapien.', 'Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem. Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue.', '2024-11-02', 13, -168, false, 25);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Proin at turpis a pede posuere nonummy.', 'Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros.', '2024-11-02', 80, -116, false, 12);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 'Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros.', '2024-11-02', 47, -613, true, 51);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Quisque porta volutpat erat.', 'Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus. In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti. In eleifend quam a odio.', '2024-11-02', 91, -192, true, 15);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci.', 'Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc.', '2024-11-04', 5, 473, false, 94);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est.', 'Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit.', '2024-11-04', 51, 459, true, 85);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nullam porttitor lacus at turpis.', 'Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst.', '2024-11-01', 47, 707, false, 66);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Maecenas pulvinar lobortis est.', 'Cras pellentesque volutpat dui.', '2024-11-01', 82, -942, false, 20);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Duis bibendum.', 'Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem.', '2024-11-02', 76, -595, true, 58);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('In sagittis dui vel nisl.', 'Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', '2024-11-04', 1, -75, false, 59);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nulla ut erat id mauris vulputate elementum.', 'Sed ante. Vivamus tortor. Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique.', '2024-11-04', 50, 594, false, 39);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nullam varius.', 'Proin at turpis a pede posuere nonummy. Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi.', '2024-11-01', 15, 249, true, 39);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nullam sit amet turpis elementum ligula vehicula consequat.', 'Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus. In sagittis dui vel nisl. Duis ac nibh.', '2024-11-02', 80, 818, true, 38);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue.', 'Suspendisse accumsan tortor quis turpis. Sed ante.', '2024-11-04', 47, -450, false, 94);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Etiam justo.', 'In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat.', '2024-11-03', 54, -837, true, 80);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Duis bibendum.', 'Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus.', '2024-11-02', 46, -91, true, 56);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Vivamus vel nulla eget eros elementum pellentesque.', 'Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui.', '2024-11-02', 19, 973, true, 5);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('In hac habitasse platea dictumst.', 'Duis ac nibh.', '2024-11-01', 81, -743, true, 79);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Fusce consequat.', 'Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue.', '2024-11-02', 60, -359, false, 84);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.', 'Sed accumsan felis. Ut at dolor quis odio consequat varius. Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi. Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus. Curabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla.', '2024-11-01', 44, 184, true, 85);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Proin leo odio, porttitor id, consequat in, consequat ut, nulla.', 'Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo.', '2024-11-04', 39, -61, true, 54);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.', 'Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque. Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus. Phasellus in felis. Donec semper sapien a libero.', '2024-11-02', 36, 52, false, 49);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci.', 'Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', '2024-11-02', 31, -550, true, 53);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh.', 'Aliquam erat volutpat. In congue. Etiam justo. Etiam pretium iaculis justo.', '2024-11-03', 92, -663, true, 78);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Pellentesque eget nunc.', 'Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis.', '2024-11-01', 14, 890, true, 73);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Suspendisse potenti.', 'Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti.', '2024-11-04', 53, 490, true, 32);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa.', 'Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo.', '2024-11-03', 80, -393, true, 28);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Donec dapibus.', 'Nulla tellus. In sagittis dui vel nisl.', '2024-11-04', 98, 542, true, 97);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Curabitur gravida nisi at nibh.', 'In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt.', '2024-11-04', 5, -193, true, 19);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Integer non velit.', 'Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero.', '2024-11-04', 97, -285, true, 21);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nulla mollis molestie lorem.', 'Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis. Fusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti.', '2024-11-03', 35, 336, true, 35);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Aenean auctor gravida sem.', 'Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem.', '2024-11-01', 39, 518, true, 31);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Duis consequat dui nec nisi volutpat eleifend.', 'Proin risus. Praesent lectus. Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis.', '2024-11-02', 60, 942, true, 9);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Etiam pretium iaculis justo.', 'Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio.', '2024-11-02', 77, -801, false, 15);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Nullam molestie nibh in lectus.', 'Quisque ut erat.', '2024-11-01', 26, -305, true, 90);
+insert into Question (title, content, date, reports, votes, edited, id_user) values ('Praesent blandit lacinia erat.', 'Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi. Nulla ac enim.', '2024-11-03', 75, 895, true, 85);
 
 
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla.', '2024-11-01', 41, -925, false, true, 54, 39);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis.', '2024-11-01', 7, -961, true, false, 73, 7);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia.', '2024-11-04', 40, 361, false, true, 68, 42);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus.', '2024-11-03', 27, -516, false, false, 13, 54);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nulla ut erat id mauris vulputate elementum. Nullam varius. Nulla facilisi.', '2024-11-01', 22, 503, false, false, 62, 51);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus. Phasellus in felis. Donec semper sapien a libero. Nam dui. Proin leo odio, porttitor id, consequat in, consequat ut, nulla. Sed accumsan felis. Ut at dolor quis odio consequat varius. Integer ac leo.', '2024-11-02', 74, -755, false, true, 70, 24);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum.', '2024-11-04', 52, 251, true, true, 96, 44);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nullam varius.', '2024-11-04', 50, -589, false, false, 56, 87);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('In eleifend quam a odio. In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst.', '2024-11-04', 4, -729, false, true, 82, 7);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti. Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris. Morbi non lectus.', '2024-11-04', 91, 618, true, true, 36, 52);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Proin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem. Duis aliquam convallis nunc.', '2024-11-04', 65, 984, false, true, 21, 56);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nulla tellus. In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti.', '2024-11-04', 93, 485, false, false, 59, 87);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien.', '2024-11-02', 34, -92, false, false, 59, 58);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque.', '2024-11-04', 71, 82, true, false, 25, 28);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla.', '2024-11-02', 11, 575, true, false, 53, 79);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Ut at dolor quis odio consequat varius. Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi. Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.', '2024-11-03', 67, 557, false, true, 19, 14);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi. Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus.', '2024-11-02', 77, -61, false, true, 27, 59);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus. In sagittis dui vel nisl.', '2024-11-01', 47, -689, false, false, 72, 69);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Praesent blandit. Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl.', '2024-11-03', 47, 652, false, false, 87, 8);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim.', '2024-11-01', 78, 231, false, true, 73, 91);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat.', '2024-11-03', 69, -902, true, true, 82, 91);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla.', '2024-11-02', 2, 437, false, true, 36, 12);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Proin eu mi. Nulla ac enim.', '2024-11-04', 31, 102, false, true, 51, 1);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Curabitur convallis. Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero.', '2024-11-04', 48, 835, false, true, 93, 51);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Integer a nibh.', '2024-11-01', 90, 388, true, true, 15, 99);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem. Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum. Morbi non quam nec dui luctus rutrum.', '2024-11-03', 94, -423, true, false, 73, 53);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue. Etiam justo. Etiam pretium iaculis justo. In hac habitasse platea dictumst.', '2024-11-02', 67, 6, false, true, 44, 4);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vivamus tortor. Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis.', '2024-11-01', 40, -10, true, false, 47, 4);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam vel augue. Vestibulum rutrum rutrum neque.', '2024-11-03', 27, -193, true, false, 25, 65);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nullam molestie nibh in lectus. Pellentesque at nulla.', '2024-11-03', 31, 377, false, true, 18, 27);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.', '2024-11-04', 85, 74, true, true, 43, 96);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nam nulla.', '2024-11-01', 78, -458, true, true, 61, 67);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Duis bibendum. Morbi non quam nec dui luctus rutrum.', '2024-11-04', 20, -956, false, false, 51, 87);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus.', '2024-11-04', 94, -891, false, true, 49, 49);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', '2024-11-03', 68, -364, true, true, 26, 57);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc.', '2024-11-02', 73, 90, false, true, 6, 2);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante.', '2024-11-01', 75, 98, false, true, 8, 37);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Cras in purus eu magna vulputate luctus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', '2024-11-03', 52, -723, true, false, 19, 24);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Donec posuere metus vitae ipsum. Aliquam non mauris. Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet.', '2024-11-01', 44, -84, false, false, 51, 39);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Sed accumsan felis. Ut at dolor quis odio consequat varius. Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi. Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus. Curabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla.', '2024-11-04', 2, -972, false, false, 18, 50);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum.', '2024-11-01', 48, -637, true, true, 45, 8);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim.', '2024-11-01', 11, 951, true, true, 47, 47);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis. Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat.', '2024-11-01', 35, 137, false, true, 40, 83);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis.', '2024-11-01', 76, 842, false, true, 96, 62);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus.', '2024-11-04', 20, 701, false, true, 91, 68);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', '2024-11-03', 87, 835, false, true, 56, 38);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis.', '2024-11-04', 15, -607, false, false, 29, 31);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo.', '2024-11-03', 14, 32, true, false, 32, 87);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Praesent blandit. Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl. Nunc nisl.', '2024-11-04', 34, -637, false, false, 54, 80);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus.', '2024-11-04', 100, -712, false, true, 23, 37);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl. Aenean lectus. Pellentesque eget nunc.', '2024-11-01', 10, 938, true, true, 47, 87);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl. Aenean lectus. Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis.', '2024-11-02', 78, 193, false, true, 30, 15);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc.', '2024-11-01', 11, 270, false, false, 85, 78);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nulla tempus.', '2024-11-01', 79, -830, false, false, 81, 61);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nunc purus. Phasellus in felis. Donec semper sapien a libero. Nam dui. Proin leo odio, porttitor id, consequat in, consequat ut, nulla.', '2024-11-03', 12, -634, true, true, 4, 17);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit.', '2024-11-04', 76, -294, false, true, 45, 15);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Morbi non quam nec dui luctus rutrum. Nulla tellus. In sagittis dui vel nisl. Duis ac nibh.', '2024-11-04', 24, 344, true, true, 64, 69);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.', '2024-11-03', 43, -936, true, true, 6, 8);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet.', '2024-11-02', 62, 421, false, false, 73, 40);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Curabitur gravida nisi at nibh.', '2024-11-03', 94, -177, false, true, 30, 31);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam.', '2024-11-04', 87, 182, true, true, 7, 41);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla.', '2024-11-03', 17, -141, true, false, 85, 14);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt.', '2024-11-01', 48, -532, true, false, 96, 56);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti.', '2024-11-04', 4, 101, true, true, 36, 100);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla.', '2024-11-01', 60, -65, true, true, 45, 81);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.', '2024-11-04', 18, 781, false, false, 62, 70);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo.', '2024-11-02', 74, -409, true, false, 17, 2);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla.', '2024-11-01', 61, 62, false, false, 17, 13);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi.', '2024-11-04', 43, -569, true, false, 21, 33);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum.', '2024-11-03', 70, -422, false, false, 87, 46);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('In sagittis dui vel nisl.', '2024-11-02', 53, -192, false, true, 79, 75);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl. Aenean lectus. Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat.', '2024-11-03', 23, 283, false, false, 89, 80);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum.', '2024-11-02', 49, 186, true, false, 100, 88);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl. Aenean lectus. Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat.', '2024-11-03', 41, -51, true, false, 97, 60);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem.', '2024-11-02', 77, -338, false, true, 15, 92);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nulla tellus. In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt.', '2024-11-04', 12, 925, true, false, 90, 47);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus. Aenean fermentum.', '2024-11-01', 13, 524, true, false, 4, 96);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Aliquam erat volutpat.', '2024-11-01', 95, 532, false, true, 11, 29);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Fusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus.', '2024-11-01', 65, -444, true, true, 69, 60);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Duis ac nibh.', '2024-11-04', 22, 812, false, false, 19, 25);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam.', '2024-11-03', 45, 198, false, false, 3, 48);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis. Fusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla.', '2024-11-01', 43, 577, true, true, 56, 71);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nulla facilisi. Cras non velit nec nisi vulputate nonummy.', '2024-11-01', 50, -717, true, false, 23, 58);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Proin risus. Praesent lectus. Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis. Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci.', '2024-11-02', 97, 249, false, true, 11, 92);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue.', '2024-11-02', 3, -495, false, true, 74, 9);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi.', '2024-11-04', 76, -314, false, true, 89, 65);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Etiam justo. Etiam pretium iaculis justo. In hac habitasse platea dictumst. Etiam faucibus cursus urna. Ut tellus. Nulla ut erat id mauris vulputate elementum.', '2024-11-04', 100, -699, true, false, 87, 21);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Proin interdum mauris non ligula pellentesque ultrices.', '2024-11-02', 49, 144, false, false, 1, 95);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh.', '2024-11-02', 69, -735, true, true, 50, 11);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit.', '2024-11-04', 74, -189, true, true, 17, 19);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Curabitur in libero ut massa volutpat convallis.', '2024-11-04', 61, -958, false, true, 91, 70);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue.', '2024-11-02', 70, 462, false, true, 59, 75);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum.', '2024-11-04', 57, 148, false, false, 75, 5);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl. Aenean lectus. Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis.', '2024-11-03', 68, 753, false, true, 82, 96);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis. Fusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci.', '2024-11-02', 16, 152, true, true, 12, 42);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Morbi a ipsum. Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.', '2024-11-01', 31, -732, false, true, 65, 38);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Morbi non quam nec dui luctus rutrum. Nulla tellus. In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem.', '2024-11-01', 10, -824, false, true, 88, 28);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui.', '2024-11-01', 2, 636, false, true, 99, 61);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('In sagittis dui vel nisl.', '2024-11-02', 10, -176, true, false, 34, 36);
-insert into Answer (content, date, reports, votes, accepted, edited, user_id, question_id) values ('Donec ut dolor.', '2024-11-03', 32, 221, true, true, 55, 25);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla.', '2024-11-01', 41, -925, false, true, 54, 39);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis.', '2024-11-01', 7, -961, true, false, 73, 7);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia.', '2024-11-04', 40, 361, false, true, 68, 42);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus.', '2024-11-03', 27, -516, false, false, 13, 54);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nulla ut erat id mauris vulputate elementum. Nullam varius. Nulla facilisi.', '2024-11-01', 22, 503, false, false, 62, 51);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus. Phasellus in felis. Donec semper sapien a libero. Nam dui. Proin leo odio, porttitor id, consequat in, consequat ut, nulla. Sed accumsan felis. Ut at dolor quis odio consequat varius. Integer ac leo.', '2024-11-02', 74, -755, false, true, 70, 24);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum.', '2024-11-04', 52, 251, true, true, 96, 44);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nullam varius.', '2024-11-04', 50, -589, false, false, 56, 87);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('In eleifend quam a odio. In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst.', '2024-11-04', 4, -729, false, true, 82, 7);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti. Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris. Morbi non lectus.', '2024-11-04', 91, 618, true, true, 36, 52);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Proin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem. Duis aliquam convallis nunc.', '2024-11-04', 65, 984, false, true, 21, 56);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nulla tellus. In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti.', '2024-11-04', 93, 485, false, false, 59, 87);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien.', '2024-11-02', 34, -92, false, false, 59, 58);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque.', '2024-11-04', 71, 82, true, false, 25, 28);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla.', '2024-11-02', 11, 575, true, false, 53, 79);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Ut at dolor quis odio consequat varius. Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi. Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.', '2024-11-03', 67, 557, false, true, 19, 14);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi. Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus.', '2024-11-02', 77, -61, false, true, 27, 59);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus. In sagittis dui vel nisl.', '2024-11-01', 47, -689, false, false, 72, 69);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Praesent blandit. Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl.', '2024-11-03', 47, 652, false, false, 87, 8);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim.', '2024-11-01', 78, 231, false, true, 73, 91);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat.', '2024-11-03', 69, -902, true, true, 82, 91);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla.', '2024-11-02', 2, 437, false, true, 36, 12);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Proin eu mi. Nulla ac enim.', '2024-11-04', 31, 102, false, true, 51, 1);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Curabitur convallis. Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero.', '2024-11-04', 48, 835, false, true, 93, 51);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Integer a nibh.', '2024-11-01', 90, 388, true, true, 15, 99);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem. Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum. Morbi non quam nec dui luctus rutrum.', '2024-11-03', 94, -423, true, false, 73, 53);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue. Etiam justo. Etiam pretium iaculis justo. In hac habitasse platea dictumst.', '2024-11-02', 67, 6, false, true, 44, 4);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vivamus tortor. Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis.', '2024-11-01', 40, -10, true, false, 47, 4);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam vel augue. Vestibulum rutrum rutrum neque.', '2024-11-03', 27, -193, true, false, 25, 65);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nullam molestie nibh in lectus. Pellentesque at nulla.', '2024-11-03', 31, 377, false, true, 18, 27);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.', '2024-11-04', 85, 74, true, true, 43, 96);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nam nulla.', '2024-11-01', 78, -458, true, true, 61, 67);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Duis bibendum. Morbi non quam nec dui luctus rutrum.', '2024-11-04', 20, -956, false, false, 51, 87);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus.', '2024-11-04', 94, -891, false, true, 49, 49);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', '2024-11-03', 68, -364, true, true, 26, 57);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc.', '2024-11-02', 73, 90, false, true, 6, 2);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante.', '2024-11-01', 75, 98, false, true, 8, 37);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Cras in purus eu magna vulputate luctus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.', '2024-11-03', 52, -723, true, false, 19, 24);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Donec posuere metus vitae ipsum. Aliquam non mauris. Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet.', '2024-11-01', 44, -84, false, false, 51, 39);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Sed accumsan felis. Ut at dolor quis odio consequat varius. Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi. Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus. Curabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla.', '2024-11-04', 2, -972, false, false, 18, 50);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum.', '2024-11-01', 48, -637, true, true, 45, 8);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vestibulum rutrum rutrum neque. Aenean auctor gravida sem. Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim.', '2024-11-01', 11, 951, true, true, 47, 47);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis. Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat.', '2024-11-01', 35, 137, false, true, 40, 83);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis.', '2024-11-01', 76, 842, false, true, 96, 62);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus.', '2024-11-04', 20, 701, false, true, 91, 68);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem.', '2024-11-03', 87, 835, false, true, 56, 38);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis.', '2024-11-04', 15, -607, false, false, 29, 31);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh. In quis justo.', '2024-11-03', 14, 32, true, false, 32, 87);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Praesent blandit. Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl. Nunc nisl.', '2024-11-04', 34, -637, false, false, 54, 80);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus.', '2024-11-04', 100, -712, false, true, 23, 37);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl. Aenean lectus. Pellentesque eget nunc.', '2024-11-01', 10, 938, true, true, 47, 87);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl. Aenean lectus. Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis.', '2024-11-02', 78, 193, false, true, 30, 15);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc.', '2024-11-01', 11, 270, false, false, 85, 78);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nulla tempus.', '2024-11-01', 79, -830, false, false, 81, 61);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nunc purus. Phasellus in felis. Donec semper sapien a libero. Nam dui. Proin leo odio, porttitor id, consequat in, consequat ut, nulla.', '2024-11-03', 12, -634, true, true, 4, 17);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit.', '2024-11-04', 76, -294, false, true, 45, 15);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Morbi non quam nec dui luctus rutrum. Nulla tellus. In sagittis dui vel nisl. Duis ac nibh.', '2024-11-04', 24, 344, true, true, 64, 69);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.', '2024-11-03', 43, -936, true, true, 6, 8);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet.', '2024-11-02', 62, 421, false, false, 73, 40);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Curabitur gravida nisi at nibh.', '2024-11-03', 94, -177, false, true, 30, 31);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam.', '2024-11-04', 87, 182, true, true, 7, 41);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nulla mollis molestie lorem. Quisque ut erat. Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla.', '2024-11-03', 17, -141, true, false, 85, 14);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt.', '2024-11-01', 48, -532, true, false, 96, 56);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo. Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam. Suspendisse potenti.', '2024-11-04', 4, 101, true, true, 36, 100);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla.', '2024-11-01', 60, -65, true, true, 45, 81);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.', '2024-11-04', 18, 781, false, false, 62, 70);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo.', '2024-11-02', 74, -409, true, false, 17, 2);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla.', '2024-11-01', 61, 62, false, false, 17, 13);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi.', '2024-11-04', 43, -569, true, false, 21, 33);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Curabitur gravida nisi at nibh. In hac habitasse platea dictumst. Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum.', '2024-11-03', 70, -422, false, false, 87, 46);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('In sagittis dui vel nisl.', '2024-11-02', 53, -192, false, true, 79, 75);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl. Aenean lectus. Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat.', '2024-11-03', 23, 283, false, false, 89, 80);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem. Fusce consequat. Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum.', '2024-11-02', 49, 186, true, false, 100, 88);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl. Aenean lectus. Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat.', '2024-11-03', 41, -51, true, false, 97, 60);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem.', '2024-11-02', 77, -338, false, true, 15, 92);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nulla tellus. In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt.', '2024-11-04', 12, 925, true, false, 90, 47);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus. Aenean fermentum.', '2024-11-01', 13, 524, true, false, 4, 96);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Aliquam erat volutpat.', '2024-11-01', 95, 532, false, true, 11, 29);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Fusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus.', '2024-11-01', 65, -444, true, true, 69, 60);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Duis ac nibh.', '2024-11-04', 22, 812, false, false, 19, 25);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui. Maecenas tristique, est et tempus semper, est quam pharetra magna, ac consequat metus sapien ut nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra diam vitae quam.', '2024-11-03', 45, 198, false, false, 3, 48);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis. Fusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus. Pellentesque at nulla.', '2024-11-01', 43, 577, true, true, 56, 71);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nulla facilisi. Cras non velit nec nisi vulputate nonummy.', '2024-11-01', 50, -717, true, false, 23, 58);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Proin risus. Praesent lectus. Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis. Duis consequat dui nec nisi volutpat eleifend. Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci.', '2024-11-02', 97, 249, false, true, 11, 92);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue.', '2024-11-02', 3, -495, false, true, 74, 9);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi.', '2024-11-04', 76, -314, false, true, 89, 65);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Etiam justo. Etiam pretium iaculis justo. In hac habitasse platea dictumst. Etiam faucibus cursus urna. Ut tellus. Nulla ut erat id mauris vulputate elementum.', '2024-11-04', 100, -699, true, false, 87, 21);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Proin interdum mauris non ligula pellentesque ultrices.', '2024-11-02', 49, 144, false, false, 1, 95);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh.', '2024-11-02', 69, -735, true, true, 50, 11);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Aliquam augue quam, sollicitudin vitae, consectetuer eget, rutrum at, lorem. Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit.', '2024-11-04', 74, -189, true, true, 17, 19);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Curabitur in libero ut massa volutpat convallis.', '2024-11-04', 61, -958, false, true, 91, 70);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est. Donec odio justo, sollicitudin ut, suscipit a, feugiat et, eros. Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat. In congue.', '2024-11-02', 70, 462, false, true, 59, 75);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis. Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero. Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum.', '2024-11-04', 57, 148, false, false, 75, 5);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl. Aenean lectus. Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis.', '2024-11-03', 68, 753, false, true, 82, 96);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Morbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis. Fusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem. Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci.', '2024-11-02', 16, 152, true, true, 12, 42);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Morbi a ipsum. Integer a nibh. In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.', '2024-11-01', 31, -732, false, true, 65, 38);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Morbi non quam nec dui luctus rutrum. Nulla tellus. In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus. Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst. Maecenas ut massa quis augue luctus tincidunt. Nulla mollis molestie lorem.', '2024-11-01', 10, -824, false, true, 88, 28);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui.', '2024-11-01', 2, 636, false, true, 99, 61);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('In sagittis dui vel nisl.', '2024-11-02', 10, -176, true, false, 34, 36);
+insert into Answer (content, date, reports, votes, accepted, edited, id_user, id_question) values ('Donec ut dolor.', '2024-11-03', 32, 221, true, true, 55, 25);
 
