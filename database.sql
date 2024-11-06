@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS Image (
     imagePath VARCHAR(255) NOT NULL,
     id_user INTEGER REFERENCES Users(id) ON DELETE CASCADE,
     id_question INTEGER REFERENCES Question(id) ON DELETE CASCADE,
-    CONSTRAINT valid_image CHECK ((id_question IS NOT NULL AND id_user IS NULL) OR (id_question IS NULL AND id_user IS NOT NULL)) --This not in the relational schema (either remove or add to relational schema)
+    CONSTRAINT valid_image CHECK ((id_question IS NOT NULL AND id_user IS NULL) OR (id_question IS NULL AND id_user IS NOT NULL)) 
 );
 
 CREATE TABLE IF NOT EXISTS QuestionTag (
