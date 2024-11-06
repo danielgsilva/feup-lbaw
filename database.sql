@@ -41,7 +41,8 @@ DROP FUNCTION IF EXISTS check_author_accept_answer;
 DROP FUNCTION IF EXISTS check_duplicate_report;
 DROP FUNCTION IF EXISTS enforce_single_report_association;
 DROP FUNCTION IF EXISTS enforce_question_tag_limit;
-DROP FUNCTION IF EXISTS mark_answer_as_edited;
+DROP FUNCTION IF EXISTS mark_answer_comment_as_edited;
+DROP FUNCTION IF EXISTS mark_question_as_edited;
 
 
 
@@ -167,6 +168,14 @@ CREATE TABLE IF NOT EXISTS QuestionTag (
     id_tag INTEGER REFERENCES Tag(id) ON DELETE CASCADE,
     PRIMARY KEY (id_question, id_tag)
 );
+
+
+CREATE UNIQUE INDEX idx_user_email ON Users (email);
+
+CREATE INDEX idx_question_votes_reports ON Question (votes DESC, reports DESC);
+
+CREATE INDEX idx_answer_question ON Answer (id_question, votes DESC);CLUSTER Answer USING idx_answer_question;
+
 
 -- Add column to the Question table to store ts_vectors.
 ALTER TABLE Question
