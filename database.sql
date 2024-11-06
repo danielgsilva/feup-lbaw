@@ -69,7 +69,6 @@ CREATE TABLE IF NOT EXISTS Comment (
     CONSTRAINT valid_comment CHECK ((question_id IS NOT NULL AND answer_id IS NULL) OR (question_id IS NULL AND answer_id IS NOT NULL))
 );
 
--- Notification still needs to be updated
 CREATE TABLE IF NOT EXISTS Notification (
     id SERIAL PRIMARY KEY,
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -78,7 +77,11 @@ CREATE TABLE IF NOT EXISTS Notification (
     answer_id INTEGER REFERENCES Answer(id) ON DELETE CASCADE,
     comment_id INTEGER REFERENCES Comment(id) ON DELETE CASCADE,
     question_vote_id INTEGER REFERENCES QuestionVote(id) ON DELETE CASCADE,
-    answer_vote_id INTEGER REFERENCES AnswerVote(id) ON DELETE CASCADE
+    answer_vote_id INTEGER REFERENCES AnswerVote(id) ON DELETE CASCADE,
+    CONSTRAINT valid_notification CHECK ((answer_id IS NOT NULL AND comment_id IS NULL AND question_vote_id IS NULL AND answer_vote_id IS NULL) 
+    OR (answer_id IS NULL AND comment_id IS NOT NULL AND question_vote_id IS NULL AND answer_vote_id IS NULL) 
+    OR (answer_id IS NULL AND comment_id IS NULL AND question_vote_id IS NOT NULL AND answer_vote_id IS NULL) 
+    OR (answer_id IS NULL AND comment_id IS NULL AND question_vote_id IS NULL AND answer_vote_id IS NOT NULL))
 );
 
 CREATE TABLE IF NOT EXISTS Report (
