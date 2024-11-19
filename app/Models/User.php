@@ -24,9 +24,16 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'admin',
+        'username',
         'name',
         'email',
+        'bio',
+        'birthdate',
         'password',
+        'signUpDate',
+        'ban',
+        'score',
     ];
 
     /**
@@ -50,10 +57,26 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the cards for a user.
+     * Get the questions for a user.
      */
-    public function cards(): HasMany
+    public function questions(): HasMany
     {
-        return $this->hasMany(Card::class);
+        return $this->hasMany(Question::class, 'id_user');
+    }
+
+    /**
+     * Get the answers for a user.
+     */
+    public function answers(): HasMany
+    {
+        return $this->hasMany(Answer::class, 'id_user');
+    }
+
+    /**
+     * Get the comments for a user.
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class, 'id_user');
     }
 }
