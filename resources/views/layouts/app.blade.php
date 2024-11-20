@@ -23,9 +23,18 @@
     <body>
         <main>
             <header>
-                <h1><a href="{{ url('/cards') }}">Thingy!</a></h1>
+                <h1><a href="{{ url('/cards') }}">AskIT</a></h1> <!-- Replace the url -->
                 @if (Auth::check())
-                    <a class="button" href="{{ url('/logout') }}"> Logout </a> <span>{{ Auth::user()->name }}</span>
+                    <div class="dropdown">
+                        <button class="dropbtn">{{ Auth::user()->name }}</button>
+                        <div class="dropdown-content">
+                            <a href="{{ url('/profile') }}">Profile</a> <!-- Replace the url if needed -->
+                            <a href="{{ url('/notifications') }}">Notifications</a> <!-- Replace the url if needed -->
+                            <a href="{{ url('/logout') }}">Logout</a> <!-- Replace the url if needed -->
+                        </div>
+                    </div>
+                @else
+                    <a class="button" href="{{ url('/login') }}"> Login </a>
                 @endif
             </header>
             <section id="content">
