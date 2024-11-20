@@ -11,7 +11,7 @@ use App\Models\User;
 
 class UserProfileController extends Controller
 {
-    public function showProfile(): View
+    public function showProfile(): View|RedirectResponse
     {
         // Get the currently authenticated user
         $user = Auth::user();
