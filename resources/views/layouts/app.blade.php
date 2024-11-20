@@ -24,6 +24,7 @@
         <main>
             <header>
                 <h1><a href="{{ url('/cards') }}">AskIT</a></h1> <!-- Replace the url -->
+                <a href="{{ url('/AskIT') }}"> About Us </a> <!-- Replace the url -->
                 @if (Auth::check())
                     <div class="dropdown">
                         <button class="dropbtn">{{ Auth::user()->name }}</button>
@@ -40,6 +41,10 @@
             <section id="content">
                 @yield('content')
             </section>
+            <footer>
+                <p>&copy; 2024 AskIT</p>
+                <a href="{{ url('/contacts') }}"> Contact us</a> <!-- Replace the url -->
+            </footer>
         </main>
     </body>
 </html>
