@@ -17,6 +17,9 @@
         </div>
     </div>
 
-    <!-- Optionally, you can add a form for editing profile details here -->
+    <div class="mt-3">
+        <a href="{{ route('profile.edit') }}" class="btn btn-primary">Edit Profile</a>
+    </div>
+    
 </div>
 @endsection
