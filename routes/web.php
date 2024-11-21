@@ -7,6 +7,7 @@ use App\Http\Controllers\ItemController;
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\UserProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,3 +54,8 @@ Route::controller(RegisterController::class)->group(function () {
     Route::get('/register', 'showRegistrationForm')->name('register');
     Route::post('/register', 'register');
 });
+
+Route::get('/profile', [UserProfileController::class, 'showProfile'])->name('profile.show');
+
+Route::get('/profile/edit', [UserProfileController::class, 'editProfile'])->name('profile.edit');
+Route::patch('/profile/edit', [UserProfileController::class, 'updateProfile'])->name('profile.update');
