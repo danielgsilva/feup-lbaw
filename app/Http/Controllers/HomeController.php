@@ -1,6 +1,6 @@
 <?php
 namespace App\Http\Controllers;
-
+use App\Models\Question;
 
 class HomeController extends Controller
 {
@@ -11,7 +11,8 @@ class HomeController extends Controller
      */
     public function index()
     {
-        // You can pass data to the view if needed
-        return view('pages.home');
+        // Paginate the questions
+        $questions = Question::paginate(10); // Adjust the number as needed
+        return view('pages.home', compact('questions'));
     }
 }
