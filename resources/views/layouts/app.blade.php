@@ -23,13 +23,13 @@
     <body>
         <main>
             <header>
-                <h1><a href="{{ url('/cards') }}">AskIT</a></h1> <!-- Replace the url -->
+                <h1><a href="{{ url('home') }}">AskIT</a></h1> <!-- Replace the url -->
                 <a href="{{ url('/AskIT') }}"> About Us </a> <!-- Replace the url -->
                 @if (Auth::check())
                     <div class="dropdown">
                         <button class="dropbtn">{{ Auth::user()->name }}</button>
                         <div class="dropdown-content">
-                            <a href="{{ url('/profile') }}">Profile</a> <!-- Replace the url if needed -->
+                            <a href="{{ url('/profile/' . Auth::user()->username) }}">Profile</a> <!-- Replace the url if needed -->
                             <a href="{{ url('/notifications') }}">Notifications</a> <!-- Replace the url if needed -->
                             <a href="{{ url('/logout') }}">Logout</a> <!-- Replace the url if needed -->
                         </div>

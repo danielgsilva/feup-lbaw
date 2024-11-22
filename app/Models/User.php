@@ -79,4 +79,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Comment::class, 'id_user');
     }
+
+    public function tags() : BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'follow_tag', 'id_user', 'id_tag');
+    }
 }

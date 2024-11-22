@@ -11,21 +11,37 @@ use App\Models\User;
 
 class UserProfileController extends Controller
 {
-    public function showProfile(): View|RedirectResponse
+    // View a user's profile by username
+    public function showProfile(string $username): View|RedirectResponse
     {
-        // Get the currently authenticated user
-        $user = Auth::user();
+        // Find the user by their username
+        $user = User::where('username', $username)->first();
 
-        // Check if the user is authenticated
+        // If the user is not found, redirect to home or show a 404
         if (!$user) {
-            return redirect()->route('login')->withErrors('You must be logged in to view your profile.');
+            return redirect()->route('home')->withErrors('User not found.');
         }
 
-        // Return the profile view with the user data
-        return view('pages.showprofile', ['user' => $user]);
+        // Get the currently authenticated user
+        $authUser = Auth::user();
+
+        // Check if the authenticated user is viewing their own profile
+        $isOwnProfile = $authUser && $authUser->id === $user->id;
+
+        // Fetch the user's questions and answers
+        $questions = $user->questions; // All questions by this user
+        $answers = $user->answers; // All answers by this user
+
+        // Return the profile view with the user data and ownership status
+        return view('pages.showprofile', [
+            'user' => $user,
+            'isOwnProfile' => $isOwnProfile,
+            'questions' => $questions,
+            'answers' => $answers
+        ]);
     }
 
-    public function editProfile(): View
+    public function editProfile(): View|RedirectResponse
     {
         $user = Auth::user();
 
@@ -52,6 +68,6 @@ class UserProfileController extends Controller
 
         $user->update($validatedData);
 
-        return redirect()->route('profile.show')->with('success', 'Profile updated successfully!');
+        return redirect()->route('profile.show', ['username' => $user->username])->with('success', 'Profile updated successfully!');
     }
 }
