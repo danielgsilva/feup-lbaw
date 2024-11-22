@@ -21,5 +21,39 @@
             <a href="{{ route('profile.edit') }}" class="btn btn-primary">Edit Profile</a>
         </div>
     @endif
+
+    <div class="mt-5">
+        <h4>My Questions</h4>
+        @forelse ($questions as $question)
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5>{{ $question->title }}</h5>
+                    <p>{{ $question->content }}</p>
+                    <p><strong>Votes:</strong> {{ $question->votes }}</p>
+                    <p><strong>Posted on:</strong> {{ $question->date }}</p>
+                </div>
+            </div>
+        @empty
+            <p>No questions found.</p>
+        @endforelse
+    </div>
+
+    <!-- Display User's Answers -->
+    <div class="mt-5">
+        <h4>My Answers</h4>
+        @forelse ($answers as $answer)
+            <div class="card mt-3">
+                <div class="card-body">
+                    <p>{{ $answer->content }}</p>
+                    <p><strong>Votes:</strong> {{ $answer->votes }}</p>
+                    <p><strong>Posted on:</strong> {{ $answer->date }}</p>
+                    <p><strong>Answered to:</strong> {{ $answer->question->title }}</p>
+                </div>
+            </div>
+        @empty
+            <p>No answers found.</p>
+        @endforelse
+    </div>
+    
 </div>
 @endsection

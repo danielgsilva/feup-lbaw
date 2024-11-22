@@ -28,10 +28,16 @@ class UserProfileController extends Controller
         // Check if the authenticated user is viewing their own profile
         $isOwnProfile = $authUser && $authUser->id === $user->id;
 
+        // Fetch the user's questions and answers
+        $questions = $user->questions; // All questions by this user
+        $answers = $user->answers; // All answers by this user
+
         // Return the profile view with the user data and ownership status
         return view('pages.showprofile', [
             'user' => $user,
             'isOwnProfile' => $isOwnProfile,
+            'questions' => $questions,
+            'answers' => $answers
         ]);
     }
 

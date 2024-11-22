@@ -14,7 +14,7 @@ class Answer extends Model
     // Don't add create and update timestamps in database.
     public $timestamps  = false;
 
-    protected $table = 'Answer';
+    protected $table = 'answer';
 
     /**
      * The attributes that are mass assignable.
