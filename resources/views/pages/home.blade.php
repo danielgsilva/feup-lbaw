@@ -9,6 +9,6 @@
     @endforeach
     <div class="pagination">
     {{ $questions->links() }} <!-- The buttons are huge for some reason, probably css -->
-</div>
+    </div>
 </section>
 @endsection
