@@ -29,9 +29,5 @@ class Tag extends Model
         return $this->belongsToMany(Question::class, 'question_tag');
     }
 
-    public function users(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'follow_tag');
-    }
 
 }

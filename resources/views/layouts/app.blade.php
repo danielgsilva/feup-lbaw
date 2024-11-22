@@ -29,7 +29,7 @@
                     <div class="dropdown">
                         <button class="dropbtn">{{ Auth::user()->name }}</button>
                         <div class="dropdown-content">
-                            <a href="{{ url('/profile') }}">Profile</a> <!-- Replace the url if needed -->
+                            <a href="{{ url('/profile/' . Auth::user()->username) }}">Profile</a> <!-- Replace the url if needed -->
                             <a href="{{ url('/notifications') }}">Notifications</a> <!-- Replace the url if needed -->
                             <a href="{{ url('/logout') }}">Logout</a> <!-- Replace the url if needed -->
                         </div>

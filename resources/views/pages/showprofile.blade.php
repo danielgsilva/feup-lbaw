@@ -1,5 +1,3 @@
-<!-- resources/views/profile/show.blade.php -->
-
 @extends('layouts.app')
 
 @section('content')
@@ -17,9 +15,11 @@
         </div>
     </div>
 
-    <div class="mt-3">
-        <a href="{{ route('profile.edit') }}" class="btn btn-primary">Edit Profile</a>
-    </div>
-    
+    <!-- Show Edit button only if the profile belongs to the logged-in user -->
+    @if ($isOwnProfile)
+        <div class="mt-3">
+            <a href="{{ route('profile.edit') }}" class="btn btn-primary">Edit Profile</a>
+        </div>
+    @endif
 </div>
 @endsection

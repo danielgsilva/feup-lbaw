@@ -54,7 +54,7 @@ Route::controller(RegisterController::class)->group(function () {
     Route::post('/register', 'register');
 });
 
-Route::get('/profile', [UserProfileController::class, 'showProfile'])->name('profile.show');
+Route::get('/profile/{username}', [UserProfileController::class, 'showProfile'])->name('profile.show');
 
 Route::get('/profile/edit', [UserProfileController::class, 'editProfile'])->name('profile.edit');
 Route::patch('/profile/edit', [UserProfileController::class, 'updateProfile'])->name('profile.update');
