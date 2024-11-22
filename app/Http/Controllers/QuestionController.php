@@ -17,7 +17,9 @@ class QuestionController extends Controller
     public function show($id)
     {
         $question = Question::findOrFail($id);
-        return view('questions.show', compact('question'));
+        $answers = $question->answers()->paginate(5);
+        $comments = $question->comments()->paginate(5);
+        return view('pages.showQuestion', compact('question', 'answers', 'comments'));
     }
 
 }

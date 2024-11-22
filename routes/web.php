@@ -7,6 +7,7 @@ use App\Http\Controllers\HomeController;
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\UserProfileController;
 
 /*
@@ -28,19 +29,10 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('/home', 'index')->name('home');
 });
 
-// API
-/*
-Route::controller(CardController::class)->group(function () { 
-    Route::put('/api/cards', 'create');
-    Route::delete('/api/cards/{card_id}', 'delete');
+Route::controller(QuestionController::class)->group(function () {
+    Route::get('/questions/{id}', 'show')->name('questions.show');
 });
 
-Route::controller(ItemController::class)->group(function () {
-    Route::put('/api/cards/{card_id}', 'create');
-    Route::post('/api/item/{id}', 'update');
-    Route::delete('/api/item/{id}', 'delete');
-});
-*/
 
 // Authentication
 Route::controller(LoginController::class)->group(function () {
