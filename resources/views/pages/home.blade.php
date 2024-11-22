@@ -4,6 +4,13 @@
 
 @section('content')
 <section id="home">
+
+    <div class="create-question-button">
+        <a href="{{ route('questions.create') }}" class="btn btn-primary">
+            Create New Question
+        </a>
+    </div>
+    
     @foreach($questions as $question)
     @include('partials.question', ['question' => $question])
     @endforeach

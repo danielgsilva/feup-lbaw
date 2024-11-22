@@ -29,8 +29,19 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('/home', 'index')->name('home');
 });
 
+
+// Questions
 Route::controller(QuestionController::class)->group(function () {
-    Route::get('/questions/{id}', 'show')->name('questions.show');
+    // Create a new question
+    Route::get('/questions/create', [QuestionController::class, 'create'])->name('questions.create');
+
+    // View a specific question
+    Route::get('/questions/{id}', [QuestionController::class, 'show'])->name('questions.show');
+
+
+    // Route to handle form submission and store the new question
+    Route::post('/questions', [QuestionController::class, 'store'])->name('questions.store');
+
 });
 
 
