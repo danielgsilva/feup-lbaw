@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('title', $question->title)
@@ -12,6 +13,24 @@
     <div class="question-votes">
         <span>Votes: {{ $question->votes }}</span>
     </div>
+
+    <button id="toggle-answer-form" class="btn btn-primary mt-3">Add Your Answer</button>
+
+    <!-- Hidden Answer Form -->
+    <div id="answer-form" style="display: none;" class="mt-3">
+        <form action="{{ route('answers.store') }}" method="POST">
+            @csrf
+            <input type="hidden" name="id_question" value="{{ $question->id }}">
+
+            <div class="form-group">
+                <label for="content">Your Answer:</label>
+                <textarea id="content" name="content" class="form-control" rows="4" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success mt-2">Submit Answer</button>
+        </form>
+    </div>
+
     <div class="question-answers">
         <h3>Answers</h3>
         <button id="toggle-order" class="btn"> Order by {{ $order === 'votes' ? 'Date' : 'Votes' }} </button>
@@ -40,6 +59,18 @@
         @endforeach
     </div>
 </div>
+
+<script>
+    // Toggle visibility of the answer form
+    document.getElementById('toggle-answer-form').addEventListener('click', function() {
+        var answerForm = document.getElementById('answer-form');
+        if (answerForm.style.display === 'none') {
+            answerForm.style.display = 'block';
+        } else {
+            answerForm.style.display = 'none';
+        }
+    });
+</script>
 @endsection
 
 
@@ -55,7 +86,4 @@ Question model:
             'id_user',
     ];
 -->
-
-
-
 
