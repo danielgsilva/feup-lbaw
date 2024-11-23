@@ -14,6 +14,7 @@
     </div>
     <div class="question-answers">
         <h3>Answers</h3>
+        <button id="toggle-order" class="btn"> Order by {{ $order === 'votes' ? 'Date' : 'Votes' }} </button>
         @foreach($answers as $answer)
             <div class="answer">
             <a href="{{ route('home', ['id' => $answer->id]) }}">{{ $answer->content }}</a> <!-- Change link to answer page when implemented -->
@@ -25,10 +26,10 @@
         
         @endforeach
         <div class="pagination">
-            {{ $answers->links() }} <!-- Display pagination links -->
+            {{ $answers->appends(['order' => $order])->links() }}
         </div>
     </div>
-    <button id="toggle-comments" class="btn btn-primary mt-3">Show Comments</button>
+    <button id="toggle-comments" class="btn">Show Comments</button>
     <div id="comments-section" style="display: none;">
         <h3>Comments</h3>
         @foreach($question->comments as $comment)
@@ -39,20 +40,8 @@
         @endforeach
     </div>
 </div>
-
-<script>
-    document.getElementById('toggle-comments').addEventListener('click', function() {
-        var commentsSection = document.getElementById('comments-section');
-        if (commentsSection.style.display === 'none') {
-            commentsSection.style.display = 'block';
-            this.textContent = 'Hide Comments';
-        } else {
-            commentsSection.style.display = 'none';
-            this.textContent = 'Show Comments';
-        }
-    });
-</script>
 @endsection
+
 
 <!--
 Question model:
@@ -66,5 +55,7 @@ Question model:
             'id_user',
     ];
 -->
+
+
 
 

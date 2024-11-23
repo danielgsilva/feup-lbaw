@@ -14,12 +14,12 @@ class QuestionController extends Controller
     }
 
     //For opening the question later
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $question = Question::findOrFail($id);
-        $answers = $question->answers()->paginate(5);
-        $comments = $question->comments()->paginate(5);
-        return view('pages.showQuestion', compact('question', 'answers', 'comments'));
+        $order = $request->input('order', 'votes');
+        $answers = $question->answers()->orderBy($order,'desc')->paginate(5);
+        $comments = $question->comments()->get();
+        return view('pages.showQuestion', compact('question', 'answers', 'comments', 'order'));
     }
-
 }

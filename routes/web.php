@@ -31,6 +31,7 @@ Route::controller(HomeController::class)->group(function () {
 
 Route::controller(QuestionController::class)->group(function () {
     Route::get('/questions/{id}', 'show')->name('questions.show');
+    Route::get('/questions/{id}/comments', [QuestionController::class, 'getComments']);
 });
 
 
