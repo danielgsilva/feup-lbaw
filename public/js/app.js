@@ -8,6 +8,11 @@ function addEventListeners() {
   if (toggleOrderButton) {
     toggleOrderButton.addEventListener('click', toggleOrder);
   }
+
+  let toggleOrderQuestionsButton = document.getElementById('toggle-order-questions');
+  if (toggleOrderQuestionsButton) {
+    toggleOrderQuestionsButton.addEventListener('click', toggleOrderQuestions);
+  }
 }
 
 function encodeForAjax(data) {
@@ -45,5 +50,14 @@ function toggleComments() {
     this.textContent = 'Show Comments';
   }
 }
+
+function toggleOrderQuestions() {
+  const currentOrder = document.getElementById('toggle-order-questions').dataset.order;
+  const newOrder = currentOrder === 'votes' ? 'date' : 'votes';
+  const url = new URL(window.location.href);
+  url.searchParams.set('order', newOrder);
+  window.location.href = url.toString();
+}
+
 
 addEventListeners();

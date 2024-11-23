@@ -1,10 +1,10 @@
-<<<<<<< HEAD
 <?php
 
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Question;
+use Illuminate\Support\Facades\Auth;
 
 class QuestionController extends Controller
 {
@@ -23,33 +23,6 @@ class QuestionController extends Controller
         $comments = $question->comments()->get();
         return view('pages.showQuestion', compact('question', 'answers', 'comments', 'order'));
     }
-=======
-<?php
-
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-use App\Models\Question;
-use Illuminate\Support\Facades\Auth;
-
-class QuestionController extends Controller
-{
-    public function index()
-    {
-        $questions = Question::all();
-        return view('home', compact('questions'));
-    }
-
-    //For opening the question later
-    public function show($id)
-    {
-        $question = Question::findOrFail($id);
-        $answers = $question->answers()->paginate(5);
-        $comments = $question->comments()->paginate(5);
-        return view('pages.showQuestion', compact('question', 'answers', 'comments'));
-    }
-
-    
 
     public function create()
     {
@@ -74,7 +47,4 @@ class QuestionController extends Controller
         // Redirect to the home page or wherever you want
         return redirect()->route('home')->with('success', 'Question created successfully!');
     }
-
-
->>>>>>> 1f61eb056fc533a772ef5855c0d97f821d827f44
 }

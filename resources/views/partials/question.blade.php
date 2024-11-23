@@ -3,6 +3,7 @@
     <p>{{ $question->content }}</p>
     <div class="question-meta">
         <span>Asked by: {{ $question->user->name }} on {{ $question->date }}</span>
+        <span>Votes: {{ $question->votes }}</span>
     </div>
 </div>
 
