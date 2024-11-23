@@ -7,6 +7,8 @@ use App\Http\Controllers\HomeController;
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\UserProfileController;
 
 /*
@@ -28,19 +30,26 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('/home', 'index')->name('home');
 });
 
-// API
-/*
-Route::controller(CardController::class)->group(function () { 
-    Route::put('/api/cards', 'create');
-    Route::delete('/api/cards/{card_id}', 'delete');
+
+// Questions
+Route::controller(QuestionController::class)->group(function () {
+
+    Route::get('/questions/{id}', 'show')->name('questions.show');
+    Route::get('/questions/{id}/comments', [QuestionController::class, 'getComments']);
+
+    // Create a new question
+    Route::get('/questions/create', [QuestionController::class, 'create'])->name('questions.create');
+    // Route to handle form submission and store the new question
+    Route::post('/questions', [QuestionController::class, 'store'])->name('questions.store');
 });
 
-Route::controller(ItemController::class)->group(function () {
-    Route::put('/api/cards/{card_id}', 'create');
-    Route::post('/api/item/{id}', 'update');
-    Route::delete('/api/item/{id}', 'delete');
+// Answers
+Route::controller(AnswerController::class)->group(function () {
+    Route::get('/questions/{id}/answer/create', 'create')->name('answers.create');
+    Route::post('/questions/{id}/answer', 'store')->name('answers.store');
+    Route::post('/answers', [AnswerController::class, 'store'])->name('answers.store');
 });
-*/
+
 
 // Authentication
 Route::controller(LoginController::class)->group(function () {
