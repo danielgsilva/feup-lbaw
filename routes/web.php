@@ -33,14 +33,17 @@ Route::controller(HomeController::class)->group(function () {
 
 // Questions
 Route::controller(QuestionController::class)->group(function () {
-
-    Route::get('/questions/{id}', 'show')->name('questions.show');
-    Route::get('/questions/{id}/comments', [QuestionController::class, 'getComments']);
-
     // Create a new question
     Route::get('/questions/create', [QuestionController::class, 'create'])->name('questions.create');
-    // Route to handle form submission and store the new question
     Route::post('/questions', [QuestionController::class, 'store'])->name('questions.store');
+
+    Route::get('/questions/{id}', [QuestionController::class, 'show'])->name('questions.show');
+    Route::get('/questions/{id}/comments', [QuestionController::class, 'getComments']);
+
+    // Edit and delete question
+    Route::get('/questions/{id}/edit', [QuestionController::class, 'edit'])->name('questions.edit');
+    Route::put('/questions/{id}', [QuestionController::class, 'update'])->name('questions.update');
+    Route::delete('/questions/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
 });
 
 // Answers
@@ -48,6 +51,11 @@ Route::controller(AnswerController::class)->group(function () {
     Route::get('/questions/{id}/answer/create', 'create')->name('answers.create');
     Route::post('/questions/{id}/answer', 'store')->name('answers.store');
     Route::post('/answers', [AnswerController::class, 'store'])->name('answers.store');
+
+    // Edit and delete answer
+    Route::get('/answers/{id}/edit', [AnswerController::class, 'edit'])->name('answers.edit');
+    Route::put('/answers/{id}', [AnswerController::class, 'update'])->name('answers.update');
+    Route::delete('/answers/{id}', [AnswerController::class, 'destroy'])->name('answers.destroy');
 });
 
 
@@ -63,7 +71,9 @@ Route::controller(RegisterController::class)->group(function () {
     Route::post('/register', 'register');
 });
 
-Route::get('/profile/{username}', [UserProfileController::class, 'showProfile'])->name('profile.show');
-
+// User Profile
 Route::get('/profile/edit', [UserProfileController::class, 'editProfile'])->name('profile.edit');
 Route::patch('/profile/edit', [UserProfileController::class, 'updateProfile'])->name('profile.update');
+Route::get('/profile/{username}', [UserProfileController::class, 'showProfile'])->name('profile.show');
+
+
