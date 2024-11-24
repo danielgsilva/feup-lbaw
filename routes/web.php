@@ -37,8 +37,8 @@ Route::controller(QuestionController::class)->group(function () {
     Route::get('/questions/create', [QuestionController::class, 'create'])->name('questions.create');
     Route::post('/questions', [QuestionController::class, 'store'])->name('questions.store');
 
-    Route::get('/questions/{id}', [QuestionController::class, 'show'])->name('questions.show');
     Route::get('/questions/{id}/comments', [QuestionController::class, 'getComments']);
+    Route::get('/questions/{id}', [QuestionController::class, 'show'])->name('questions.show');
 
     // Edit and delete question
     Route::get('/questions/{id}/edit', [QuestionController::class, 'edit'])->name('questions.edit');
@@ -58,6 +58,19 @@ Route::controller(AnswerController::class)->group(function () {
     Route::delete('/answers/{id}', [AnswerController::class, 'destroy'])->name('answers.destroy');
 });
 
+// This are the routes that require authentication. If any other are added do not forget to add them here
+Route::middleware(['auth'])->group(function () {
+    Route::get('questions/create', [QuestionController::class, 'create'])->name('questions.create');
+    Route::post('questions', [QuestionController::class, 'store'])->name('questions.store');
+    Route::get('questions/{id}/edit', [QuestionController::class, 'edit'])->name('questions.edit');
+    Route::put('questions/{id}', [QuestionController::class, 'update'])->name('questions.update');
+    Route::delete('questions/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
+    Route::get('questions/{id}/answer/create', [AnswerController::class, 'create'])->name('answers.create');
+    Route::post('answers', [AnswerController::class, 'store'])->name('answers.store');
+    Route::get('answers/{id}/edit', [AnswerController::class, 'edit'])->name('answers.edit');
+    Route::put('answers/{id}', [AnswerController::class, 'update'])->name('answers.update');
+    Route::delete('answers/{id}', [AnswerController::class, 'destroy'])->name('answers.destroy');
+});
 
 // Authentication
 Route::controller(LoginController::class)->group(function () {

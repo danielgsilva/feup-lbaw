@@ -6,11 +6,9 @@
 <section id="home">
     
     <div class="create-question-button">
-        @if (Auth::check())
         <a href="{{ route('questions.create') }}" class="btn btn-primary">
             Create New Question
         </a>
-        @endif
     </div>
 
     <button id="toggle-order-questions" class="btn" data-order="{{ $order }}">

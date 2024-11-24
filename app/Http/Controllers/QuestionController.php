@@ -26,11 +26,13 @@ class QuestionController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Question::class);
         return view('pages.createquestion');
     }
 
     public function store(Request $request)
     {
+        $this->authorize('create', Question::class);
         // Validate the form input
         $request->validate([
             'title' => 'required|string|max:1000',
@@ -51,18 +53,14 @@ class QuestionController extends Controller
     public function edit($id)
     {
         $question = Question::findOrFail($id);
-        if (Auth::id() !== $question->id_user) {
-            return redirect()->route('home')->with('error', 'You are not authorized to edit this question.');
-        }
+        $this->authorize('update', $question);
         return view('pages.editquestion', compact('question'));
     }
 
     public function update(Request $request, $id)
     {
         $question = Question::findOrFail($id);
-        if (Auth::id() !== $question->id_user) {
-            return redirect()->route('home')->with('error', 'You are not authorized to update this question.');
-        }
+        $this->authorize('update', $question);
 
         // Validate the form input
         $request->validate([
@@ -84,9 +82,7 @@ class QuestionController extends Controller
     public function destroy($id)
     {
         $question = Question::findOrFail($id);
-        if (Auth::id() !== $question->id_user) {
-            return redirect()->route('home')->with('error', 'You are not authorized to delete this question.');
-        }
+        $this->authorize('delete', $question);
         $question->delete();
         return redirect()->route('home')->with('success', 'Question deleted successfully!');
     }

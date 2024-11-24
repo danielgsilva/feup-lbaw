@@ -29,7 +29,7 @@
         </form>
     @endif
 
-    @if (Auth::check() && Auth::id() !== $question->id_user)
+
     <button id="toggle-answer-form" class="btn btn-primary mt-3">Add Your Answer</button>
 
     <!-- Hidden Answer Form -->
@@ -46,7 +46,7 @@
             <button type="submit" class="btn btn-success mt-2">Submit Answer</button>
         </form>
     </div>
-    @endif
+
 
     <div class="question-answers">
     <h3>Answers</h3>
