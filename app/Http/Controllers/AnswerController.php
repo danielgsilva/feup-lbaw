@@ -35,4 +35,45 @@ class AnswerController extends Controller
         return redirect()->route('questions.show', $request->input('id_question'))
                          ->with('success', 'Your answer has been posted.');
     }
+
+        
+    public function edit($id)
+    {
+        $answer = Answer::findOrFail($id);
+        if (Auth::id() !== $answer->id_user) {
+            return redirect()->route('questions.show', $answer->id_question)->with('error', 'Unauthorized action.');
+        }
+        $question = Question::findOrFail($answer->id_question);
+        return view('pages.editanswer', compact('answer', 'question'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $answer = Answer::findOrFail($id);
+        if (Auth::id() !== $answer->id_user) {
+            return redirect()->route('questions.show', $answer->id_question)->with('error', 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'content' => 'required|string',
+        ]);
+
+        $answer->update([
+            'content' => $request->input('content'),
+        ]);
+
+        return redirect()->route('questions.show', $answer->id_question)->with('success', 'Your answer has been updated.');
+    }
+
+    public function destroy($id)
+    {
+        $answer = Answer::findOrFail($id);
+        if (Auth::id() !== $answer->id_user) {
+            return redirect()->route('questions.show', $answer->id_question)->with('error', 'Unauthorized action.');
+        }
+
+        $answer->delete();
+
+        return redirect()->route('questions.show', $answer->id_question)->with('success', 'Your answer has been deleted.');
+    }
 }
