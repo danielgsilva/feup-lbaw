@@ -22,6 +22,16 @@
         </div>
     @endif
 
+    @if (Auth::check() && Auth::user()->admin && $user->username !== 'anonymous' && Auth::user()->id !== $user->id)
+    <div class="mt-3">
+        <form action="{{ route('profile.delete', $user->username) }}" method="POST" onsubmit="return confirm('Tem a certeza de que deseja eliminar este utilizador? Esta ação é irreversível.');">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger">Eliminar Utilizador</button>
+        </form>
+    </div>
+@endif
+
     <div class="mt-5">
         <h4>My Questions</h4>
         @forelse ($questions as $question)

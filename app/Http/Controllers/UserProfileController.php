@@ -70,4 +70,40 @@ class UserProfileController extends Controller
 
         return redirect()->route('profile.show', ['username' => $user->username])->with('success', 'Profile updated successfully!');
     }
+
+    public function deleteUser(string $username): RedirectResponse
+    {
+        $authuser = Auth::user();
+
+        if (!$authuser || !$authuser->admin ) {
+            return redirect()->route('home')->withErrors('User not found.');
+        }
+
+        $user = User::where('username', $username)->first();
+
+        if (!$user) {
+            return redirect()->route('home')->withErrors('User not found.');
+        }
+
+        if ($authuser->id === $user->id) {
+            return redirect()->route('home')->withErrors('You cannot delete yourself.');
+        }
+
+        $anonymous = User::firstorCreate(
+            ['username' => 'anonymous',],
+            [
+            'name' => 'Anonymous',
+            'email' => 'anonymous',
+            'bio' => 'This user has been deleted.',
+            'score' => 0,
+            'password' => bcrypt('anonymous'),
+        ]);
+
+        $user->questions()->update(['id_user' => $anonymous->id]);
+        $user->answers()->update(['id_user' => $anonymous->id]);
+
+        $user->delete();
+
+        return redirect()->route('home')->with('success', 'User deleted successfully.');
+    }
 }
