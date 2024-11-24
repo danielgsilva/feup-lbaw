@@ -21,29 +21,45 @@
         </script>
     </head>
     <body>
-        <main>  
-            <header>
-                <h1><a href="{{ url('home') }}">AskIT</a></h1> <!-- Replace the url -->
-                <a href="{{ url('/AskIT') }}"> About Us </a> <!-- Replace the url -->
-                @if (Auth::check())
-                    <div class="dropdown">
-                        <button class="dropbtn">{{ Auth::user()->name }}</button>
-                        <div class="dropdown-content">
-                            <a href="{{ url('/profile/' . Auth::user()->username) }}">Profile</a> <!-- Replace the url if needed -->
-                            <a href="{{ url('/notifications') }}">Notifications</a> <!-- Replace the url if needed -->
-                            <a href="{{ url('/logout') }}">Logout</a> <!-- Replace the url if needed -->
-                        </div>
-                    </div>
-                @else
-                    <a class="button" href="{{ url('/login') }}"> Login </a>
-                @endif
-            </header>
+        <main>
+        <header>
+    <div class="header-container d-flex justify-content-between align-items-center mt-3">
+        <!-- Logo Section -->
+        <h1><a href="{{ url('home') }}">AskIT</a></h1>
+
+        <!-- Search Bar Section (centered) -->
+        <div class="search-container">
+            <form action="{{ route('questions.search') }}" method="GET" class="search-form d-flex">
+                <input type="text" name="query" placeholder="Search questions..." required class="form-control">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+        </div>
+
+        <!-- User Authentication Dropdown -->
+        @if (Auth::check())
+            <div class="dropdown">
+                <button class="dropbtn">{{ Auth::user()->name }}</button>
+                <div class="dropdown-content">
+                    <a href="{{ url('/profile/' . Auth::user()->username) }}">Profile</a>
+                    <a href="{{ url('/notifications') }}">Notifications</a>
+                    <a href="{{ url('/logout') }}">Logout</a>
+                </div>
+            </div>
+        @else
+            <a class="button" href="{{ url('/login') }}">Login</a>
+        @endif
+    </div>
+</header>
+
+
+
             <section id="content">
                 @yield('content')
             </section>
             <footer>
                 <p>&copy; 2024 AskIT</p>
                 <a href="{{ url('/contacts') }}"> Contact us</a> <!-- Replace the url -->
+                <a href="{{ url('/AskIT') }}"> About Us </a> <!-- Replace the url -->
             </footer>
         </main>
     </body>

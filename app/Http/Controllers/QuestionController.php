@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Question;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class QuestionController extends Controller
 {
@@ -95,5 +96,19 @@ class QuestionController extends Controller
         $this->authorize('delete', $question);
         $question->delete();
         return redirect()->route('home')->with('success', 'Question deleted successfully!');
+    }
+
+    public function search(Request $request)
+    {
+        $search = $request->input('query');
+        
+        $questions = DB::table('question')
+            ->select('question.id', 'question.title', 'question.content', 'question.date', 'users.username')
+            ->join('users', 'users.id', '=', 'question.id_user')
+            ->whereRaw("tsvectors @@ plainto_tsquery('english', ?)", [$search])
+            ->orderByRaw("ts_rank(tsvectors, plainto_tsquery('english', ?)) DESC", [$search])
+            ->paginate(10);
+
+        return view('pages.search', compact('questions', 'search')); 
     }
 }
