@@ -50,7 +50,7 @@
 
     <div class="question-answers">
     <h3>Answers</h3>
-    <button id="toggle-order" class="btn"> Order by {{ $order === 'votes' ? 'Date' : 'Votes' }} </button>
+    <button id="toggle-order" class="btn" data-order="{{ $order }}"> Order by {{ $order === 'votes' ? 'Date' : 'Votes' }} </button>
     @foreach($answers as $answer)
         <div class="answer" id="answer-{{ $answer->id }}">
             <p>{{ $answer->content }}</p>
@@ -74,20 +74,6 @@
 
     
 </div>
-
-
-<script>
-
-    
-document.getElementById('toggle-answer-form').addEventListener('click', function() {
-    var answerForm = document.getElementById('answer-form');
-    if (answerForm.style.display === 'none') {
-        answerForm.style.display = 'block';
-    } else {
-        answerForm.style.display = 'none';
-    }
-});
-</script>
 @endsection
 
 
