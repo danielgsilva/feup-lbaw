@@ -89,6 +89,8 @@ Route::get('/profile/edit', [UserProfileController::class, 'editProfile'])->name
 Route::patch('/profile/edit', [UserProfileController::class, 'updateProfile'])->name('profile.update');
 Route::get('/profile/{username}', [UserProfileController::class, 'showProfile'])->name('profile.show');
 Route::delete('/profile/{username}', [UserProfileController::class, 'deleteUser'])->name('profile.delete');
+Route::patch('/profile/{username}/ban', [UserProfileController::class, 'toggleBan'])->name('profile.toggleBan');
+
 
 
 

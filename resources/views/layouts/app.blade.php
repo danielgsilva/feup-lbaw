@@ -21,7 +21,7 @@
         </script>
     </head>
     <body>
-        <main>
+        <main>  
             <header>
                 <h1><a href="{{ url('home') }}">AskIT</a></h1> <!-- Replace the url -->
                 <a href="{{ url('/AskIT') }}"> About Us </a> <!-- Replace the url -->

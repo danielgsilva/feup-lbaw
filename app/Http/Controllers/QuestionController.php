@@ -27,17 +27,27 @@ class QuestionController extends Controller
     public function create()
     {
         $this->authorize('create', Question::class);
+        if(Auth::user()->ban){
+            return redirect()->route('home')->with('error', 'You are banned and cannot create questions.');
+        }
         return view('pages.createquestion');
     }
 
     public function store(Request $request)
     {
         $this->authorize('create', Question::class);
+
+        if (Auth::user()->ban) {
+            return redirect()->route('home')->withErrors(['message' => 'Account banned.']);
+        }
+
         // Validate the form input
         $request->validate([
             'title' => 'required|string|max:1000',
             'content' => 'required|string',
         ]);
+
+        
 
         // Create the question
         $question = new Question();
