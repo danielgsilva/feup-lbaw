@@ -13,6 +13,11 @@ function addEventListeners() {
   if (toggleOrderQuestionsButton) {
     toggleOrderQuestionsButton.addEventListener('click', toggleOrderQuestions);
   }
+
+  let toggleAnswerFormButton = document.getElementById('toggle-answer-form');
+  if (toggleAnswerFormButton) {
+    toggleAnswerFormButton.addEventListener('click', toggleAnswerForm);
+  }
 }
 
 function encodeForAjax(data) {
@@ -33,7 +38,8 @@ function sendAjaxRequest(method, url, data, handler) {
 }
 
 function toggleOrder() {
-  const currentOrder = document.getElementById('toggle-order').dataset.order;
+  const toggleOrderButton = document.getElementById('toggle-order');
+  const currentOrder = toggleOrderButton.dataset.order;
   const newOrder = currentOrder === 'votes' ? 'date' : 'votes';
   const url = new URL(window.location.href);
   url.searchParams.set('order', newOrder);
@@ -59,5 +65,13 @@ function toggleOrderQuestions() {
   window.location.href = url.toString();
 }
 
+function toggleAnswerForm() {
+  const answerForm = document.getElementById('answer-form');
+  if (answerForm.style.display === 'none') {
+    answerForm.style.display = 'block';
+  } else {
+    answerForm.style.display = 'none';
+  }
+}
 
 addEventListeners();

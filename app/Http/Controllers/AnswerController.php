@@ -13,12 +13,15 @@ class AnswerController extends Controller
     public function create($id)
     {
         $question = Question::findOrFail($id);
+        $this->authorize('create', Answer::class);
         return view('answers.create', compact('question'));
     }
 
     // Store the new answer
     public function store(Request $request)
     {
+        $this->authorize('create', Answer::class);
+
         $request->validate([
             'content' => 'required|string',
             'id_question' => 'required|integer|exists:question,id',
@@ -40,9 +43,7 @@ class AnswerController extends Controller
     public function edit($id)
     {
         $answer = Answer::findOrFail($id);
-        if (Auth::id() !== $answer->id_user) {
-            return redirect()->route('questions.show', $answer->id_question)->with('error', 'Unauthorized action.');
-        }
+        $this->authorize('edit', $answer);
         $question = Question::findOrFail($answer->id_question);
         return view('pages.editanswer', compact('answer', 'question'));
     }
@@ -50,9 +51,7 @@ class AnswerController extends Controller
     public function update(Request $request, $id)
     {
         $answer = Answer::findOrFail($id);
-        if (Auth::id() !== $answer->id_user) {
-            return redirect()->route('questions.show', $answer->id_question)->with('error', 'Unauthorized action.');
-        }
+        $this->authorize('update', $answer);
 
         $request->validate([
             'content' => 'required|string',
@@ -68,6 +67,7 @@ class AnswerController extends Controller
     public function destroy($id)
     {
         $answer = Answer::findOrFail($id);
+        $this->authorize('delete', $answer);
         if (Auth::id() !== $answer->id_user) {
             return redirect()->route('questions.show', $answer->id_question)->with('error', 'Unauthorized action.');
         }

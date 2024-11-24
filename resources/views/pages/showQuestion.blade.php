@@ -29,7 +29,7 @@
         </form>
     @endif
 
-    @if (Auth::check() && Auth::id() !== $question->id_user)
+
     <button id="toggle-answer-form" class="btn btn-primary mt-3">Add Your Answer</button>
 
     <!-- Hidden Answer Form -->
@@ -46,11 +46,11 @@
             <button type="submit" class="btn btn-success mt-2">Submit Answer</button>
         </form>
     </div>
-    @endif
+
 
     <div class="question-answers">
     <h3>Answers</h3>
-    <button id="toggle-order" class="btn"> Order by {{ $order === 'votes' ? 'Date' : 'Votes' }} </button>
+    <button id="toggle-order" class="btn" data-order="{{ $order }}"> Order by {{ $order === 'votes' ? 'Date' : 'Votes' }} </button>
     @foreach($answers as $answer)
         <div class="answer" id="answer-{{ $answer->id }}">
             <p>{{ $answer->content }}</p>
@@ -74,20 +74,6 @@
 
     
 </div>
-
-
-<script>
-
-    
-document.getElementById('toggle-answer-form').addEventListener('click', function() {
-    var answerForm = document.getElementById('answer-form');
-    if (answerForm.style.display === 'none') {
-        answerForm.style.display = 'block';
-    } else {
-        answerForm.style.display = 'none';
-    }
-});
-</script>
 @endsection
 
 
