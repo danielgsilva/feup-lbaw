@@ -8,7 +8,14 @@
     <h1>{{ $question->title }}</h1>
     <p>{{ $question->content }}</p>
     <div class="question-meta">
-        <span>Asked by: <a href="{{ route('profile.show', $question->user->username) }}">{{ $question->user->name }}</a> on {{ $question->date }}</span>
+        <span>
+            Asked by: 
+            @if ($question->user)
+            <a href="{{ route('profile.show', $question->user->username) }}">{{ $question->user->name }}</a> on {{ $question->date }}
+            @else
+            Anonymous on {{ $question->date }}
+            @endif
+        </span>
     </div>
     <div class="question-votes">
         <span>Votes: {{ $question->votes }}</span>
