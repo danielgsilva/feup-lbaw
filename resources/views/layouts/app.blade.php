@@ -42,6 +42,12 @@
                 <div class="dropdown-content">
                     <a href="{{ url('/profile/' . Auth::user()->username) }}">Profile</a>
                     <a href="{{ url('/notifications') }}">Notifications</a>
+                    @if (Auth::user()->admin)
+                    <form action="{{ route('profile.search') }}" method="GET" style="margin: 10px;">
+        <input type="text" name="query" placeholder="Search Profiles" required>
+        <button type="submit">Search</button>
+    </form>
+                    @endif
                     <a href="{{ url('/logout') }}">Logout</a>
                 </div>
             </div>

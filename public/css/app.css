@@ -67,9 +67,7 @@ input[type=password]:focus {
   border-color: #9b4dca;
 }
 
-.dropdown:hover .dropdown-content {
-  display: block;
-}
+
 
 .dropdown-content {
   display: none;
@@ -89,6 +87,10 @@ input[type=password]:focus {
 
 .dropdown-content a:hover {
   background-color: #f1f1f1;
+}
+
+.dropbtn:hover + .dropdown-content {
+  display: block;
 }
 
 main footer {

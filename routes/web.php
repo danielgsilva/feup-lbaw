@@ -90,6 +90,7 @@ Route::controller(RegisterController::class)->group(function () {
 
 // User Profile
 Route::get('/profile/edit', [UserProfileController::class, 'editProfile'])->name('profile.edit');
+Route::get('/profile/search', [UserProfileController::class, 'search'])->name('profile.search');
 Route::patch('/profile/edit', [UserProfileController::class, 'updateProfile'])->name('profile.update');
 Route::get('/profile/{username}', [UserProfileController::class, 'showProfile'])->name('profile.show');
 Route::delete('/profile/{username}', [UserProfileController::class, 'deleteUser'])->name('profile.delete');

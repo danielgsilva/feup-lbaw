@@ -128,4 +128,20 @@ class UserProfileController extends Controller
 
         return redirect()->route('profile.show', ['username' => $user->username])->with('success', $user->ban ? 'User banned successfully.' : 'User unbanned successfully.');
     }
+
+    public function search(Request $request): View
+    {
+
+        $request->validate([
+            'query' => 'required|string|max:255',
+        ]);
+
+        $query = $request->input('query');
+
+        $users = User::where('name', 'ILIKE', "%$query%")
+            ->orWhere('username', 'ILIKE', "%$query%")
+            ->get();
+
+        return view('pages.searchusers', ['users' => $users]);
+    }
 }
