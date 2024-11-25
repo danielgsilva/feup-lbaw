@@ -39,7 +39,7 @@
     </div>
 @endif
 
-@if(Auth::user()->admin && !$isOwnProfile && $user->username !== 'anonymous')
+@if(Auth::check() && Auth::user()->admin && !$isOwnProfile && $user->username !== 'anonymous')
     <form method="POST" action="{{ route('profile.toggleBan', $user->username) }}">
         @csrf
         @method('PATCH')
