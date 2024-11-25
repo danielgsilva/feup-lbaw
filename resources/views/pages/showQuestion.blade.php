@@ -31,9 +31,17 @@
         </form>
     @endif
 
-    @if (Auth::user()->id != $question->id_user)
-    <button id="toggle-answer-form" class="btn btn-primary mt-3">Add Your Answer</button>
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
     @endif
+
+    <button id="toggle-answer-form" class="btn btn-primary mt-3">Add Your Answer</button>
     
     <!-- Hidden Answer Form -->
     <div id="answer-form" style="display: none;" class="mt-3">

@@ -13,7 +13,7 @@ class AnswerController extends Controller
     public function create($id)
     {
         $question = Question::findOrFail($id);
-        $this->authorize('create', Answer::class);
+        $this->authorize('create', [Answer::class, $question]);
         if (Auth::user()->ban) {
             return redirect()->route('home')->withErrors(['message' => 'A sua conta está suspensa.']);
         }
@@ -23,8 +23,19 @@ class AnswerController extends Controller
     // Store the new answer
     public function store(Request $request)
     {
-        $this->authorize('create', Answer::class);
+        $question = Question::findOrFail($request->input('id_question'));
+        if (Auth::id() === $question->id_user) {
+            return redirect()->route('questions.show', $question->id)
+                     ->withErrors(['message' => 'You cannot answer to your own question.']);
+        }
 
+        try {
+            $this->authorize('create', [Answer::class, $question]);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return redirect()->route('questions.show', $question->id)
+                     ->withErrors(['message' => 'You are not authorized to create an answer for this question.']);
+        }
+    
         if (Auth::user()->ban) {
             return redirect()->route('home')->withErrors(['message' => 'A sua conta está suspensa.']);
         }
