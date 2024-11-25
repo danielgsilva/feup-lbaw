@@ -1,17 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h2>Edit Answer</h2>
+<div id="edit-answer">
+    <h1>Edit Answer</h1>
     <form action="{{ route('answers.update', $answer->id) }}" method="POST">
         @csrf
         @method('PUT')
         <div class="form-group">
-            <label for="answer">Answer</label>
-            <textarea class="form-control" id="answer" name="content" rows="5">{{ old('content', $answer->content) }}</textarea>
+            <label for="content" class="form-label">Answer</label>
+            <textarea name="content" class="form-control" rows="5">{{ $answer->content }}</textarea>
         </div>
-        <button type="submit" class="btn btn-primary">Update Answer</button>
-        <a href="{{ route('questions.show', $question->id) }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Change Answer</button>
     </form>
 </div>
 @endsection

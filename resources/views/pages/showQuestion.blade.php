@@ -5,6 +5,7 @@
 
 @section('content')
 <div class="container">
+    <div class ="card">
     <h1>{{ $question->title }}</h1>
     <p>{{ $question->content }}</p>
     <div class="question-meta">
@@ -16,12 +17,13 @@
             Anonymous on {{ $question->date }}
             @endif
         </span>
-    </div>
-    <div class="question-votes">
         <span>Votes: {{ $question->votes }}</span>
     </div>
+    </div>
     @if (Auth::check() && Auth::id() === $question->id_user)
-    <a href="{{ route('questions.edit', $question->id) }}" class="btn btn-primary">Edit Question</a>
+    <a href="{{ route('questions.edit', $question->id) }}" class="btn btn-primary">
+        <button type="button" class="btn btn-primary">Edit Question</button>
+    </a>
     <form action="{{ route('questions.destroy', $question->id) }}" method="POST" style="display:inline;">
                 @csrf
                 @method('DELETE')
@@ -29,9 +31,10 @@
         </form>
     @endif
 
-
+    @if (Auth::user()->id != $question->id_user)
     <button id="toggle-answer-form" class="btn btn-primary mt-3">Add Your Answer</button>
-
+    @endif
+    
     <!-- Hidden Answer Form -->
     <div id="answer-form" style="display: none;" class="mt-3">
         <form action="{{ route('answers.store') }}" method="POST">
@@ -58,7 +61,9 @@
                 <span>Answered by: <a href="{{ route('profile.show', $answer->user->username) }}">{{ $answer->user->name }}</a> on {{ $answer->date }}</span>
                 <span>Votes: {{ $answer->votes }}</span>
                 @if (Auth::check() && Auth::id() === $answer->id_user)
-                <a href="{{ route('answers.edit', $answer->id) }}" class="btn btn-primary">Edit</a>
+                <a href="{{ route('answers.edit', $answer->id) }}" class="btn btn-primary">
+        <button type="button" class="btn btn-primary">Edit</button>
+    </a>
                 <form action="{{ route('answers.destroy', $answer->id) }}" method="POST" style="display:inline;">
                     @csrf
                     @method('DELETE')
