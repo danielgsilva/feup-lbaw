@@ -106,4 +106,26 @@ class UserProfileController extends Controller
 
         return redirect()->route('home')->with('success', 'User deleted successfully.');
     }
+
+    public function toggleBan(string $username): RedirectResponse
+    {
+        $user = User::where('username', $username)->first();
+
+        if (!Auth::user()->admin ) {
+            return redirect()->route('home')->withErrors('User not found.');
+        }
+
+        if (!$user) {
+            return redirect()->route('home')->withErrors('User not found.');
+        }
+
+        if (Auth::user()->id === $user->id) {
+            return redirect()->route('home')->withErrors('You cannot ban yourself.');
+        }
+
+        $user->ban = !$user->ban;
+        $user->save();
+
+        return redirect()->route('profile.show', ['username' => $user->username])->with('success', $user->ban ? 'User banned successfully.' : 'User unbanned successfully.');
+    }
 }

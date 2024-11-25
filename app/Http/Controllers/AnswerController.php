@@ -14,6 +14,9 @@ class AnswerController extends Controller
     {
         $question = Question::findOrFail($id);
         $this->authorize('create', Answer::class);
+        if (Auth::user()->ban) {
+            return redirect()->route('home')->withErrors(['message' => 'A sua conta está suspensa.']);
+        }
         return view('answers.create', compact('question'));
     }
 
@@ -21,6 +24,10 @@ class AnswerController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', Answer::class);
+
+        if (Auth::user()->ban) {
+            return redirect()->route('home')->withErrors(['message' => 'A sua conta está suspensa.']);
+        }
 
         $request->validate([
             'content' => 'required|string',

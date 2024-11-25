@@ -37,8 +37,12 @@ Route::controller(QuestionController::class)->group(function () {
     Route::get('/questions/create', [QuestionController::class, 'create'])->name('questions.create');
     Route::post('/questions', [QuestionController::class, 'store'])->name('questions.store');
 
+    Route::get('/questions/search', [QuestionController::class, 'search'])->name('questions.search');
+
     Route::get('/questions/{id}/comments', [QuestionController::class, 'getComments']);
     Route::get('/questions/{id}', [QuestionController::class, 'show'])->name('questions.show');
+
+    
 
     // Edit and delete question
     Route::get('/questions/{id}/edit', [QuestionController::class, 'edit'])->name('questions.edit');
@@ -89,6 +93,8 @@ Route::get('/profile/edit', [UserProfileController::class, 'editProfile'])->name
 Route::patch('/profile/edit', [UserProfileController::class, 'updateProfile'])->name('profile.update');
 Route::get('/profile/{username}', [UserProfileController::class, 'showProfile'])->name('profile.show');
 Route::delete('/profile/{username}', [UserProfileController::class, 'deleteUser'])->name('profile.delete');
+Route::patch('/profile/{username}/ban', [UserProfileController::class, 'toggleBan'])->name('profile.toggleBan');
+
 
 
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Question;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class QuestionController extends Controller
 {
@@ -27,17 +28,27 @@ class QuestionController extends Controller
     public function create()
     {
         $this->authorize('create', Question::class);
+        if(Auth::user()->ban){
+            return redirect()->route('home')->with('error', 'You are banned and cannot create questions.');
+        }
         return view('pages.createquestion');
     }
 
     public function store(Request $request)
     {
         $this->authorize('create', Question::class);
+
+        if (Auth::user()->ban) {
+            return redirect()->route('home')->withErrors(['message' => 'Account banned.']);
+        }
+
         // Validate the form input
         $request->validate([
             'title' => 'required|string|max:1000',
             'content' => 'required|string',
         ]);
+
+        
 
         // Create the question
         $question = new Question();
@@ -85,5 +96,19 @@ class QuestionController extends Controller
         $this->authorize('delete', $question);
         $question->delete();
         return redirect()->route('home')->with('success', 'Question deleted successfully!');
+    }
+
+    public function search(Request $request)
+    {
+        $search = $request->input('query');
+        
+        $questions = DB::table('question')
+            ->select('question.id', 'question.title', 'question.content', 'question.date', 'users.username')
+            ->join('users', 'users.id', '=', 'question.id_user')
+            ->whereRaw("tsvectors @@ plainto_tsquery('english', ?)", [$search])
+            ->orderByRaw("ts_rank(tsvectors, plainto_tsquery('english', ?)) DESC", [$search])
+            ->paginate(10);
+
+        return view('pages.search', compact('questions', 'search')); 
     }
 }

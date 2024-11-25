@@ -10,13 +10,20 @@
             <h3>{{ $user->name }}</h3>
             <p><strong>Username:</strong> {{ $user->username }}</p>
             <p><strong>Email:</strong> {{ $user->email }}</p>
-            <p><strong>Bio:</strong> {{ $user->bio ?? 'No bio available' }}</p>
+            <p><strong>Bio:</strong>
+            @if ($user->ban)
+                <span class="badge badge-danger"> This user is Banned</span> 
+            @else
+                {{ $user->bio ?? 'No bio available' }}
+            @endif
+            </p>
+
             <p><strong>Score:</strong> {{ $user->score }}</p>
         </div>
     </div>
 
     <!-- Show Edit button only if the profile belongs to the logged-in user -->
-    @if ($isOwnProfile)
+    @if ($isOwnProfile && !Auth::user()->ban)
         <div class="mt-3">
             <a href="{{ route('profile.edit') }}" class="btn btn-primary">Edit Profile</a>
         </div>
@@ -30,6 +37,16 @@
             <button type="submit" class="btn btn-danger">Eliminar Utilizador</button>
         </form>
     </div>
+@endif
+
+@if(Auth::check() && Auth::user()->admin && !$isOwnProfile && $user->username !== 'anonymous')
+    <form method="POST" action="{{ route('profile.toggleBan', $user->username) }}">
+        @csrf
+        @method('PATCH')
+        <button class="btn {{ $user->ban ? 'btn-danger' : 'btn-success' }}">
+            {{ $user->ban ? 'Desbanir Utilizador' : 'Banir Utilizador' }}
+        </button>
+    </form>
 @endif
 
     <div class="mt-5">
