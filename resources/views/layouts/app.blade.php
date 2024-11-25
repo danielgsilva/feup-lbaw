@@ -21,41 +21,45 @@
         </script>
     </head>
     <body>
-        <main>
+    <main>
         <header>
-    <div class="header-container d-flex justify-content-between align-items-center mt-3">
-        <!-- Logo Section -->
-        <h1><a href="{{ url('home') }}">AskIT</a></h1>
+            <div class="header-container d-flex justify-content-between align-items-center mt-3">
+                <!-- Logo Section -->
+                <h1><a href="{{ url('home') }}">AskIT</a></h1>
 
-        <!-- Search Bar Section (centered) -->
-        <div class="search-container">
-            <form action="{{ route('questions.search') }}" method="GET" class="search-form d-flex">
-                <input type="text" name="query" placeholder="Search questions..." required class="form-control">
-                <button type="submit" class="btn btn-primary">Search</button>
-            </form>
-        </div>
-
-        <!-- User Authentication Dropdown -->
-        @if (Auth::check())
-            <div class="dropdown">
-                <button class="dropbtn">{{ Auth::user()->name }}</button>
-                <div class="dropdown-content">
-                    <a href="{{ url('/profile/' . Auth::user()->username) }}">Profile</a>
-                    <a href="{{ url('/notifications') }}">Notifications</a>
-                    @if (Auth::user()->admin)
-                    <form action="{{ route('profile.search') }}" method="GET" style="margin: 10px;">
-        <input type="text" name="query" placeholder="Search Profiles" required>
-        <button type="submit">Search</button>
-    </form>
-                    @endif
-                    <a href="{{ url('/logout') }}">Logout</a>
+                <!-- Search Bar Section (centered) -->
+                <div class="search-container d-flex justify-content-center align-items-center">
+                    <form action="{{ route('questions.search') }}" method="GET" class="search-form d-flex">
+                        <input type="text" name="query" placeholder="Search questions..." required class="form-control">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
                 </div>
+
+                <!-- User Authentication Dropdown -->
+                @if (Auth::check())
+                    <div class="dropdown">
+                        <button class="dropbtn">{{ Auth::user()->name }}</button>
+                        <div class="dropdown-content">
+                            <a href="{{ url('/profile/' . Auth::user()->username) }}">Profile</a>
+                            <a href="{{ url('/notifications') }}">Notifications</a>
+                            @if (Auth::user()->admin)
+                                <form action="{{ route('profile.search') }}" method="GET" style="margin: 10px;">
+                                    <input type="text" name="query" placeholder="Search Profiles" required>
+                                    <button type="submit">Search</button>
+                                </form>
+                            @endif
+                            <a href="{{ url('/logout') }}">Logout</a>
+                        </div>
+                    </div>
+                @else
+                <div class= "log">
+                    <a href="{{ url('/login') }}"  class="button btn btn-primary">Login</a>
+                </div>
+                @endif
             </div>
-        @else
-            <a class="button" href="{{ url('/login') }}">Login</a>
-        @endif
-    </div>
-</header>
+        </header>
+    
+
 
 
 

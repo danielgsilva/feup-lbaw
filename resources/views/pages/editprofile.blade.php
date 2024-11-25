@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div id="edit-profile">
     <h1>Edit Profile</h1>
 
     @if (session('success'))
@@ -24,22 +24,22 @@
         @csrf
         @method('PATCH')
 
-        <div class="mb-3">
+        <div class="form-group">
             <label for="name" class="form-label">Name</label>
             <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $user->name) }}" required>
         </div>
 
-        <div class="mb-3">
+        <div class="form-group">
             <label for="username" class="form-label">Username</label>
             <input type="text" name="username" id="username" class="form-control" value="{{ old('username', $user->username) }}" required>
         </div>
 
-        <div class="mb-3">
+        <div class="form-group">
             <label for="bio" class="form-label">Bio</label>
             <textarea name="bio" id="bio" class="form-control" rows="3">{{ old('bio', $user->bio) }}</textarea>
         </div>
 
-        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <button type="submit" class="button">Save Changes</button>
     </form>
 </div>
 @endsection

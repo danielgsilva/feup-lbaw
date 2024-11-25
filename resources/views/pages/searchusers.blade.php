@@ -11,7 +11,8 @@
     @endif
 
     @isset($users)
-        <h2>Results</h2>
+    <div class = "search-users">
+        <h2>User Search Results:</h2>
         @if($users->isNotEmpty())
     <div class="user-list">
         @foreach($users as $user)
@@ -22,6 +23,9 @@
             </div>
         @endforeach
     </div>
+</div>
+@else
+    <p class="no-results">No users found matching your query.</p>
 @endif
     @endisset
 @endsection
