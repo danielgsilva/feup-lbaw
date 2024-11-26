@@ -367,7 +367,8 @@ footer a:hover {
 .profile-btn {
   background-color: #003366;
   border-color: #003366;
-  padding: 10px 20px;
+  width: 15%;
+  padding: 10px;
   border-radius: 5px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
   display: flex;
@@ -375,6 +376,7 @@ footer a:hover {
   justify-content: center;
   text-align: center;
   color: white;
+  margin-bottom: 20px;
   
 }
 
