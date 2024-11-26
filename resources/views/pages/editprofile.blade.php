@@ -2,7 +2,7 @@
 
 @section('content')
 <div id="edit-profile">
-    <h1>Edit Profile</h1>
+    <h1>{{ isset($isAdminEditing) && $isAdminEditing ? 'Edit User Profile' : 'Edit Profile' }}</h1>
 
     @if (session('success'))
         <div class="alert alert-success">
@@ -20,7 +20,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('profile.update') }}">
+    <form method="POST" action="{{ isset($isAdminEditing) && $isAdminEditing ? route('profile.updateAny', $user->username) : route('profile.update') }}">
         @csrf
         @method('PATCH')
 
