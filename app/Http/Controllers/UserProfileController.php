@@ -41,35 +41,67 @@ class UserProfileController extends Controller
         ]);
     }
 
-    public function editProfile(): View|RedirectResponse
-    {
-        $user = Auth::user();
+    public function editProfile(string $username = null): View|RedirectResponse
+{
+    $authUser = Auth::user();
 
-        if (!$user) {
-            return redirect()->route('login')->withErrors('You must be logged in to edit your profile.');
-        }
-
-        return view('pages.editprofile', ['user' => $user]);
+    // Check if the user is logged in
+    if (!$authUser) {
+        return redirect()->route('login')->withErrors('You must be logged in to edit profiles.');
     }
 
-    public function updateProfile(Request $request): RedirectResponse
-    {
-        $user = Auth::user();
+    // Determine the target user: 
+    // - Admins can edit any user profile using the $username parameter.
+    // - Non-admins can only edit their own profile.
+    if ($username && $authUser->admin) {
+        $user = User::where('username', $username)->first();
 
         if (!$user) {
-            return redirect()->route('login')->withErrors('You must be logged in to edit your profile.');
+            return redirect()->route('home')->withErrors('User not found.');
         }
-
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
-            'bio' => 'nullable|string|max:1000',
-        ]);
-
-        $user->update($validatedData);
-
-        return redirect()->route('profile.show', ['username' => $user->username])->with('success', 'Profile updated successfully!');
+    } else {
+        $user = $authUser;
     }
+
+    // Render the edit profile page with the target user
+    return view('pages.editprofile', [
+        'user' => $user,
+        'isAdminEditing' => $username && $authUser->admin
+    ]);
+}
+
+public function updateProfile(Request $request, string $username = null): RedirectResponse
+{
+    $authUser = Auth::user();
+
+    if (!$authUser) {
+        return redirect()->route('login')->withErrors('You must be logged in to update profiles.');
+    }
+
+    // Allow admin to update any user's profile
+    if ($username && $authUser->admin) {
+        $user = User::where('username', $username)->first();
+
+        if (!$user) {
+            return redirect()->route('home')->withErrors('User not found.');
+        }
+    } else {
+        $user = $authUser;
+    }
+
+    // Validate input
+    $validatedData = $request->validate([
+        'name' => 'required|string|max:255',
+        'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+        'bio' => 'nullable|string|max:1000',
+    ]);
+
+    // Update user information
+    $user->update($validatedData);
+
+    return redirect()->route('profile.show', ['username' => $user->username])
+        ->with('success', 'Profile updated successfully!');
+}
 
     public function deleteUser(string $username): RedirectResponse
     {

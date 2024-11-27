@@ -73,6 +73,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('answers/{id}/edit', [AnswerController::class, 'edit'])->name('answers.edit');
     Route::put('answers/{id}', [AnswerController::class, 'update'])->name('answers.update');
     Route::delete('answers/{id}', [AnswerController::class, 'destroy'])->name('answers.destroy');
+    Route::get('/profile/{username}/edit', [UserProfileController::class, 'editProfile'])
+        ->name('profile.editAny');
+    Route::patch('/profile/{username}', [UserProfileController::class, 'updateProfile'])
+        ->name('profile.updateAny');
 });
 
 // Authentication
