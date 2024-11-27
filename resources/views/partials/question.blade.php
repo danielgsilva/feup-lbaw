@@ -1,6 +1,11 @@
 <div class="card mb-4">
     <div class="card-body">
-        <h2><a href="{{ route('questions.show', $question->id) }}" class="text-decoration-none text-dark">{{ $question->title }}</a></h2>
+        <h2><a href="{{ route('questions.show', $question->id) }}" class="text-decoration-none text-dark">{{ $question->title }}</a>
+        @if ($question->edited)
+            <span class="badge badge-warning"><i>(Edited)</i></span>
+        @endif
+        </h2>
+        
         <p>{{ $question->content }}</p>
 
         <div class="d-flex justify-content-between align-items-center">
@@ -15,6 +20,9 @@
 
             <span class="badge badge-info">
                 Votes: {{ $question->votes }}
+            </span>
+            <span class="badge badge-secondary">
+                Answers: {{ $question->answers->count() }}
             </span>
         </div>
     </div>

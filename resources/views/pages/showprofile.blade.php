@@ -22,7 +22,7 @@
     </div>
 
     
-    @if ($isOwnProfile || (Auth::user()->admin && Auth::user()->id !== $user->id) && !Auth::user()->ban)
+    @if (Auth::check() && ($isOwnProfile || (Auth::user()->admin) && Auth::user()->id !== $user->id) && !Auth::user()->ban)
     <div class="mt-3">
         <a href="{{ route('profile.editAny', ['username' => $user->username]) }}" class="btn btn-primary profile-btn">
             Edit Profile

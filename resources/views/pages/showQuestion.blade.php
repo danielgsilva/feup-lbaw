@@ -6,7 +6,11 @@
 @section('content')
 <div class="container">
     <div class ="card">
-    <h1>{{ $question->title }}</h1>
+    <h1>{{ $question->title }} 
+    @if ($question->edited)
+        <span class="badge badge-warning"><i>(Edited)</i></span>
+    @endif
+    </h1>
     <p>{{ $question->content }}</p>
     <div class="question-meta">
         <span>
