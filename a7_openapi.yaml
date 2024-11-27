@@ -1,0 +1,645 @@
+openapi: 3.0.0
+
+info:
+ version: '1.0'
+ title: 'LBAW ASKIT Web API'
+ description: 'Web Resources Specification (A7) for ASKIT'
+
+tags:
+- name: 'M01: Authentication'
+- name: 'M02: Individual Profile and User administration'
+- name: 'M03: Publications' 
+- name: 'M04: Static pages'
+- name: 'M05: Reports'
+- name: 'M06: Notifications'
+
+
+paths:
+# MODULE 01: Authentication
+  /login:
+    get:
+      operationId: R101
+      summary: 'R101: Login Form'
+      description: 'Provide login form. Access: PUB'
+      tags: 
+        - 'M01: Authentication'
+      responses: 
+        '200':
+          description: 'Ok. Show Log-in Page'
+        
+    post:
+      operationId: R102
+      summary : 'R102: Login Action'
+      description:  'Processes the login form submission. Access: PUB'
+      tags:
+        - 'M01: Authentication'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: 'The email of the user'
+                password:
+                  type: string
+                  description: 'The password of the user'
+              required:
+                - email
+                - password
+                
+      responses: 
+        '302':  
+          description: 'Redirect after login'
+          headers:
+            Location:
+              description: 'URL for redirection'
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful authentication. Redirect to user profile.'
+                  value: '/'
+                302Error:
+                  description: 'Failed authentication. Redirect to Login Page.'
+                  value: '/auth/login'
+
+  /logout:
+    post:
+      operationId: R103
+      summary: 'R103: Logout Action'
+      description: 'Processes the logout action. Access: USR'
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '302':
+          description: 'Redirect to Home Page'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful logout. Redirect to login page.'
+                  value: '/'
+                302Error:
+                  description: 'Failed logout. Redirect to Home Page'
+                  value: '/' 
+
+  /register:
+    get:
+      operationId: R104
+      summary: 'R104: Register Form'
+      description: 'Provide register form. Access: PUB'
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '200':
+          description: 'Ok. Show Register Page'
+    
+    post:
+      operationId: R105
+      summary: 'R105: Register Action'
+      description: 'Processes the register form submission. Access: PUB'
+      tags:
+        - 'M01: Authentication'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'The name of the user'
+                username:
+                  type: string
+                  description: 'The username of the user'
+                email:
+                  type: string
+                  description: 'The email of the user'
+                password:
+                  type: string
+                  description: 'The password of the user'
+                password_confirmation:
+                  type: string
+                  description: 'The password confirmation of the user'
+              required:
+                - name
+                - email
+                - password
+                - password_confirmation
+      responses:
+        '302':
+          description: 'Redirect after registration'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful registration. Redirect to user profile.'
+                  value: '/'
+                302Error:
+                  description: 'Failed registration. Redirect to Register Page'
+                  value: '/auth/register'
+
+
+# MODULE 02: Individual Profile and User administration
+
+  /profile/{username}:
+    get:
+      operationId: R201
+      summary: 'R201: View Profile'
+      description: 'Provide user profile page. Access: PUB'
+      tags:
+        - 'M02: Individual Profile and User administration'
+      parameters:
+        - in: path
+          name: username
+          description: 'The username of the user'
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: 'Ok. Show User Profile Page'
+        '404':
+          description: 'User not found'
+    
+    delete:
+      operationId: R202
+      summary: 'R202: Delete User'
+      description: 'Delete user. Access: ADM'
+      tags:
+        - 'M02: Individual Profile and User administration'
+      parameters:
+        - in: path
+          name: username
+          description: 'The username of the user'
+          schema:
+            type: string
+          required: true
+      responses:
+        '202':
+          description: 'Accepted. User deleted'
+        '404':
+          description: 'User not found'
+  
+  /profile/edit:
+    get:
+      operationId: R203
+      summary: 'R203: Edit Profile'
+      description: 'Provide user profile edit form. Access: OWN, ADM'
+      tags:
+        - 'M02: Individual Profile and User administration'
+      responses:
+        '200':
+          description: 'Ok. Show User Profile Edit Page'
+    patch:
+      operationId: R204
+      summary: 'R204: Update Profile'
+      description: 'Processes the user profile edit form submission. Access: OWN, ADM'
+      tags:
+        - 'M02: Individual Profile and User administration'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'The name of the user'
+                email:
+                  type: string
+                  description: 'The email of the user'
+                bio:
+                  type: string
+                  description: 'The bio of the user'
+              example:
+                name: 'John Doe'
+                email: 'john@example.com'
+                bio: 'I am a software engineer'
+      responses:
+        '302':
+          description: 'Redirect after profile update'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful profile update. Redirect to user profile.'
+                  value: '/profile/{username}'
+                302Error:
+                  description: 'Failed profile update. Redirect to Edit Profile Page'
+  
+  /profile/search:
+    get:
+      operationId: R205
+      summary: 'R205: Search User'
+      description: 'Provide user search page. Access: ADM'
+      tags:
+        - 'M02: Individual Profile and User administration'
+      parameters:
+        - in: query
+          name: username
+          description: 'The username of the user'
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: 'Ok. Show User Search Page'
+
+
+  /profile/{username}/ban:
+    patch:
+      operationId: R206
+      summary: 'R206: Ban User'
+      description: 'Ban user. Access: ADM'
+      tags:
+        - 'M02: Individual Profile and User administration'
+      parameters:
+        - in: path
+          name: username
+          description: 'The username of the user'
+          schema:
+            type: string
+          required: true
+      responses:
+        '202':
+          description: 'Accepted. User banned'
+        '404':
+          description: 'User not found'
+
+# MODULE 03: Publications
+
+  /questions/create:
+    get:
+      operationId: R301
+      summary: 'R301: Create Question Form'
+      description: 'Provide create question form. Access: USR'
+      tags:
+        - 'M03: Publications'
+      responses:
+        '200':
+          description: 'Ok. Show Create Question Page'
+  /questions:
+    post:
+      operationId: R302
+      summary: 'R302: Create Question Action'
+      description: 'Processes the create question form submission. Access: USR'
+      tags:
+        - 'M03: Publications'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 'The title of the question'
+                content:
+                  type: string
+                  description: 'The body of the question'
+              required:
+                - title
+                - content
+              example:
+                title: 'How to create a web API?'
+                content: 'I am trying to create a web API but I am having some trouble. Can someone help me?'
+      responses:
+        '302':
+          description: 'Redirect after question creation'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful question creation. Redirect to question page.'
+                  value: '/'
+                302Error:
+                  description: 'Failed question creation. Redirect to Create Question Page'
+                  value: '/questions/create'
+  /questions/search:
+    get:
+      operationId: R303
+      summary: 'R303: Search Questions'
+      description: 'Provide search questions page. Access: PUB'
+      tags:
+        - 'M03: Publications'
+      parameters:
+        - in: query
+          name: query
+          description: 'Search query'
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: 'Ok. Show Search Questions Page'
+  /questions/{id}:
+    get:
+      operationId: R304
+      summary: 'R304: View Question'
+      description: 'Provide question page. Access: PUB'
+      tags:
+        - 'M03: Publications'
+      parameters:
+        - in: path
+          name: id
+          description: 'The id of the question'
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: 'Ok. Show Question Page'
+        '404':
+          description: 'Question not found'
+    delete:
+      operationId: R305
+      summary: 'R305: Delete Question'
+      description: 'Delete question. Access: OWN'
+      tags:
+        - 'M03: Publications'
+      parameters:
+        - in: path
+          name: id
+          description: 'The id of the question'
+          schema:
+            type: integer
+          required: true
+      responses:
+        '302':
+          description: 'Redirect after question deletion'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful question deletion. Redirect to Home Page.'
+                  value: '/'
+                302Error:
+                  description: 'Failed question deletion. Redirect to Question Page'
+                  value: '/questions/{id}'
+    put:
+      operationId: R306
+      summary: 'R306: Update Question'
+      description: 'Processes the question edit form submission. Access: OWN'
+      tags:
+        - 'M03: Publications'
+      parameters:
+        - in: path
+          name: id
+          description: 'The id of the question'
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 'The title of the question'
+                content:
+                  type: string
+                  description: 'The body of the question'
+              required:
+                - title
+                - content
+              example:
+                title: 'How to create a web API?'
+                content: 'I am trying to create a web API but I am having a trouble with sql. Can someone help me?'
+      responses:
+        '302':
+          description: 'Redirect after question update'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful question update. Redirect to question page.'
+                  value: '/questions/{id}'
+                302Error:
+                  description: 'Failed question update. Redirect to Edit Question Page'
+                  value: '/questions/{id}/edit'
+
+  /questions/{id}/edit:
+    get:
+      operationId: R307
+      summary: 'R307: Edit Question'
+      description: 'Provide question edit form. Access: OWN'
+      tags:
+        - 'M03: Publications'
+      parameters:
+        - in: path
+          name: id
+          description: 'The id of the question'
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: 'Ok. Show Edit Question Page'
+
+  /questions/{id}/answer/create:
+    get:
+      operationId: R308
+      summary: 'R308: Create Answer Form'
+      description: 'Provide create answer form. Access: USR'
+      tags:
+        - 'M03: Publications'
+      parameters:
+        - in: path
+          name: id
+          description: 'The id of the question'
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: 'Ok. Show Create Answer Page'
+  /answers:
+    post:
+      operationId: R309
+      summary: 'R309: Create Answer Action'
+      description: 'Processes the create answer form submission. Access: USR'
+      tags:
+        - 'M03: Publications'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: 'The body of the answer'
+              required:
+                - content
+              example:
+                content: 'You can create a web API by following these steps...'
+      responses:
+        '302':
+          description: 'Redirect after answer creation'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful answer creation. Redirect to question page.'
+                  value: '/questions/{id}'
+                302Error:
+                  description: 'Failed answer creation. Redirect to Create Answer Page'
+                  value: '/questions/{id}/answer/create'
+    
+  /answers/{id}:
+    put:
+      operationId: R310
+      summary: 'R310: Update Answer'
+      description: 'Processes the answer edit form submission. Access: OWN'
+      tags:
+        - 'M03: Publications'
+      parameters:
+        - in: path
+          name: id
+          description: 'The id of the answer'
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: 'The body of the answer'
+              required:
+                - content
+              example:
+                content: 'You can create a web API by following these steps...'
+      responses:
+        '302':
+          description: 'Redirect after answer update'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful answer update. Redirect to question page.'
+                  value: '/questions/{id}'
+                302Error:
+                  description: 'Failed answer update. Redirect to Edit Answer Page'
+                  value: '/answers/{id}/edit'
+    delete:
+      operationId: R311
+      summary: 'R311: Delete Answer'
+      description: 'Delete answer. Access: OWN'
+      tags:
+        - 'M03: Publications'
+      parameters:
+        - in: path
+          name: id
+          description: 'The id of the answer'
+          schema:
+            type: integer
+          required: true
+      responses:
+        '302':
+          description: 'Redirect after answer deletion'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful answer deletion. Redirect to question page.'
+                  value: '/questions/{id}'
+                302Error:
+                  description: 'Failed answer deletion. Redirect to question page'
+                  value: '/questions/{id}'
+
+  /answers/{id}/edit:
+    get:
+      operationId: R312
+      summary: 'R312: Edit Answer'
+      description: 'Provide answer edit form. Access: OWN'
+      tags:
+        - 'M03: Publications'
+      parameters:
+        - in: path
+          name: id
+          description: 'The id of the answer'
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: 'Ok. Show Edit Answer Page'
+
+
+# MODULE 04: Static pages
+  /:
+    get:
+      operationId: R401
+      summary: 'R401: Home Page'
+      description: 'Provide home page. Access: PUB'
+      tags:
+        - 'M04: Static pages'
+      responses:
+        '202':
+          description: 'Ok. Show Home Page'
+  /aboutus:
+    get:
+      operationId: R402
+      summary: 'R402: About Us Page'
+      description: 'Provide about us page. Access: PUB'
+      tags:
+        - 'M04: Static pages'
+      responses:
+        '202':
+          description: 'Ok. Show About Us Page'
+
+  /mainfeatures:
+    get:
+      operationId: R403
+      summary: 'R403: Main Features Page'
+      description: 'Provide main features page. Access: PUB'
+      tags:
+        - 'M04: Static pages'
+      responses:
+        '202':
+          description: 'Ok. Show Main Features Page'
+
+  /contactus:
+    get:
+      operationId: R404
+      summary: 'R404: Contact Us Page'
+      description: 'Provide contact us page. Access: PUB'
+      tags:
+        - 'M04: Static pages'
+      responses:
+        '202':
+          description: 'Ok. Show Contact Us Page'

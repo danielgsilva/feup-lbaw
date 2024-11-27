@@ -4,36 +4,38 @@
 <div id="profile" class="container">
     <h1>User Profile</h1>
 
-    <!-- Display the user's information -->
+   
     <div class="card profile-card">
         <div class="card-body">
             <h3>{{ $user->name }}</h3>
             <p><strong>Username:</strong> {{ $user->username }}</p>
             <p><strong>Email:</strong> {{ $user->email }}</p>
-            <p><strong>Bio:</strong>
+            <p><strong>Bio:</strong> 
             @if ($user->ban)
-                <span class="badge badge-danger">This user is Banned</span> 
+            <span class="badge badge-danger">This user is banned</span>
             @else
-                {{ $user->bio ?? 'No bio available' }}
+            {{ $user->bio ?? 'No bio available' }}
             @endif
-            </p>
+        </p>
             <p><strong>Score:</strong> {{ $user->score }}</p>
         </div>
     </div>
 
-    <!-- Show Edit button only if the profile belongs to the logged-in user -->
-    @if ($isOwnProfile && !Auth::user()->ban)
-        <div class="mt-3">
-            <a href="{{ route('profile.edit') }}" class="btn btn-primary profile-btn">Edit Profile</a>
-        </div>
-    @endif
+    
+    @if ($isOwnProfile || (Auth::user()->admin && Auth::user()->id !== $user->id) && !Auth::user()->ban)
+    <div class="mt-3">
+        <a href="{{ route('profile.editAny', ['username' => $user->username]) }}" class="btn btn-primary profile-btn">
+            Edit Profile
+        </a>
+    </div>
+@endif
 
-    @if (Auth::check() && Auth::user()->admin && $user->username !== 'anonymous' && Auth::user()->id !== $user->id)
+@if (Auth::check() && Auth::user()->admin && $user->username !== 'anonymous' && !$isOwnProfile)
     <div class="mt-3">
         <form action="{{ route('profile.delete', $user->username) }}" method="POST" onsubmit="return confirm('Tem a certeza de que deseja eliminar este utilizador? Esta ação é irreversível.');">
             @csrf
             @method('DELETE')
-            <button type="submit" class="btn btn-danger profile-btn">Eliminar Utilizador</button>
+            <button type="submit" class="btn btn-danger profile-btn">Delete User</button>
         </form>
     </div>
 @endif
@@ -43,10 +45,13 @@
         @csrf
         @method('PATCH')
         <button class="btn {{ $user->ban ? 'btn-danger' : 'btn-success' }} profile-btn">
-            {{ $user->ban ? 'Desbanir Utilizador' : 'Banir Utilizador' }}
+            {{ $user->ban ? 'Unban user' : 'Ban User' }}
         </button>
     </form>
 @endif
+
+
+    
 
     <!-- Profile Content in Grid (Questions and Answers side by side) -->
     <div class="row mt-5 profile-content">
@@ -86,3 +91,4 @@
     </div>
 </div>
 @endsection
+
