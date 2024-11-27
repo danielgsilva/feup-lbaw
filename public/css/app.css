@@ -7,11 +7,11 @@ input[type="email"]:focus,
 input[type="password"]:focus,
 textarea:focus,
 select:focus {
-  outline: 1px solid #003366; /* Cor do contorno */
-  border-color: #003366; /* Cor da borda */
+  outline: 1px solid #003366; 
+  border-color: #003366; 
 }
 
-/* Estilo para a paginação */
+
 .pagination {
   display: flex;
   justify-content: center;
@@ -31,15 +31,15 @@ select:focus {
 }
 
 .question {
-  margin-bottom: 30px; /* Adds spacing between questions */
+  margin-bottom: 30px; 
   padding: 20px;
-  background-color: #f8f9fa; /* Light background for each question */
+  background-color: #f8f9fa; 
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .question h2 {
-  font-size: 1.25rem; /* Adjusting the question title font size */
+  font-size: 1.25rem; 
   font-weight: bold;
   margin-bottom: 10px;
 }
@@ -70,70 +70,70 @@ select:focus {
 }
 
 .card {
-  background-color: #f0f0f0;  /* Cor de fundo */
-  border-radius: 8px;  /* Bordas arredondadas */
-  padding: 20px;  /* Espaçamento interno */
-  margin-bottom: 20px;  /* Espaço entre os cartões */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);  /* Sombra suave */
-  transition: transform 0.3s, box-shadow 0.3s;  /* Transição suave para o efeito de hover */
+  background-color: #f0f0f0;  
+  border-radius: 8px;  
+  padding: 20px;  
+  margin-bottom: 20px;  
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);  
+  transition: transform 0.3s, box-shadow 0.3s; 
 }
 
 
 .card:hover {
-  transform: translateY(-5px);  /* Move o cartão para cima */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);  /* Aumenta a sombra para dar destaque */
+  transform: translateY(-5px);  
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);  
 }
 
-/* Texto azul marinho */
+
 body {
-  color: #003366;  /* Azul marinho */
+  color: #003366;  
 }
 
 
 .card h2, .card p {
-  color: #003366;  /* Azul marinho */
+  color: #003366;  
 }
 
 
 button, .btn, .btn-primary {
-  background-color: #003366;  /* Azul marinho */
+  background-color: #003366;  
   border-color: #003366;
-  color: #ffffff;  /* Branco para o texto do botão */
+  color: #ffffff;  
 }
 
 
 
 button:hover, .btn:hover {
-  background-color: #002244;  /* Azul marinho escuro para o hover */
+  background-color: #002244;  
   border-color: #002244;
 }
 
 
 a, a.button, a.button.button-outline {
-  color: #003366;  /* Azul marinho */
+  color: #003366;  
   text-decoration: none;
 }
 
 a:hover, a.button:hover {
-  color: #002244;  /* Azul marinho escuro para o hover */
+  color: #002244;  
 }
 
-/* Foco em campos de entrada */
+
 input[type=text]:focus,
 input[type=email]:focus,
 input[type=password]:focus {
-  border-color: #003366;  /* Azul marinho */
+  border-color: #003366;  
 }
 
 
 #toggle-order-questions, .search-container button {
-  background-color: #003366;  /* Azul marinho */
+  background-color: #003366;  
   border-color: #003366;
   color: #ffffff;
 }
 
 #toggle-order-questions:hover, .search-container button:hover {
-  background-color: #002244;  /* Azul marinho escuro para o hover */
+  background-color: #002244;  
   border-color: #002244;
 }
 
@@ -152,7 +152,7 @@ home.blade.php
   font-weight: 1000;
 }
 
-/* Botão Create New Question */
+
 .create-question-btn {
     background-color: #003366;
     color: white;
@@ -198,14 +198,14 @@ html, body {
   flex-direction: column;
 }
 
-/* Main deve ocupar o espaço disponível */
+
 main {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-/* Estilo do footer */
+
 footer {
   background-color: #343a40;
   padding: 20px;
@@ -226,20 +226,20 @@ footer a:hover {
   text-decoration: underline;
 }
 
-/* Header Container */
+
 .header-container {
-  background-color: #343a40; /* Dark background */
+  background-color: #343a40; 
   color: white;
   padding: 25px;
   margin: 5px;
   border-radius: 8px;
   display: flex;
-  justify-content: space-between; /* Distribute items with space between */
-  align-items: center; /* Vertically center items */
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  justify-content: space-between; 
+  align-items: center; 
+  flex-wrap: wrap; 
 }
 
-/* Logo Section */
+
 .header-container h1 a {
   text-decoration: none;
   color: white;
@@ -252,12 +252,12 @@ footer a:hover {
   justify-content: center;
   align-items: center;
 }
-/* Search Bar Section */
+
 .search-container form {
   display: flex;
   justify-content: center;
   align-items: center;
-  max-width: 900px; /* Define a maximum width for the search bar */
+  max-width: 900px; 
   width: 100%;
   margin: 0 auto;
 }
@@ -284,7 +284,7 @@ footer a:hover {
 .log , a.btn.btn-primary {
   color: white;
 }
-/* Dropdown Section */
+
 .dropdown {
   position: relative;
   display: inline-block;
@@ -330,7 +330,7 @@ footer a:hover {
 .dropdown-content a:hover {
   background-color: #ddd;
 }
-/* Footer */
+
 footer {
   background-color: #343a40;;
   padding: 20px;
@@ -389,15 +389,15 @@ footer a:hover {
 
 .profile-content {
   display: flex;
-  justify-content: space-between; /* Garante que as colunas fiquem distribuídas com espaçamento */
-  gap: 20px; /* Espaço entre as colunas */
+  justify-content: space-between; 
+  gap: 20px; 
   flex-wrap: wrap;
 }
 
 
 .profile-content .col-md-6 {
-  flex: 1 1 calc(50% - 10px); /* Garantir que as colunas ocupem 50% da largura, com margem */
-  margin-bottom: 20px; /* Espaçamento abaixo de cada coluna */
+  flex: 1 1 calc(50% - 10px); 
+  margin-bottom: 20px; 
 }
 
 .profile-content .col-md-6 h4 {
@@ -407,12 +407,12 @@ footer a:hover {
 
 .profile-question-card,
 .profile-answer-card {
-  margin-bottom: 15px; /* Espaço entre os cartões */
+  margin-bottom: 15px; 
 }
 
 .profile-question-card .card-body,
 .profile-answer-card .card-body {
-  padding: 15px; /* Padding menor dentro dos cartões */
+  padding: 15px; 
 }
 
 .profile-question-card .card-body > h5  a {
@@ -435,7 +435,7 @@ footer a:hover {
 
 /*User search*/
 
-/* Estilo do título da pesquisa */
+
 .search-users > h2 {
   font-weight: 1000;
   display: flex;
@@ -443,68 +443,67 @@ footer a:hover {
   margin-bottom: 30px;
 }
 
-/* Estilo dos links de usuário */
+
 .user-item > a {
-  text-decoration: none; /* Remove o sublinhado */
-  color: #003366; /* Cor azul do link */
+  text-decoration: none; 
+  color: #003366; 
   font-weight: 600;
 }
 
-/* Estilo do item de usuário (cartão) */
+
 .user-item {
-  margin-bottom: 20px; /* Espaço entre os cartões */
+  margin-bottom: 20px; 
   margin-left: 20px;
-  padding: 20px; /* Espaçamento interno */
-  border-radius: 10px; /* Bordas arredondadas */
-  background-color: #f0f0f0; /* Cor de fundo clara */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombras suaves para o efeito de cartão */
-  transition: transform 0.3s, box-shadow 0.3s; /* Transição suave para efeito de hover */
+  padding: 20px; 
+  border-radius: 10px;
+  background-color: #f0f0f0; 
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s; 
   width: 30%;
 }
 
-/* Efeito de hover no cartão */
+
 .user-item:hover {
-  transform: translateY(-5px); /* Move o cartão para cima */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Aumenta a sombra para efeito de destaque */
+  transform: translateY(-5px); 
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
 }
 
 
 /*Create question*/
 
-/* Estilo para a seção do formulário de criar pergunta */
 #ask-question {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;  /* Garante que o conteúdo ocupe toda a altura da página */
+  min-height: 100vh;  
   padding: 20px;
-  background-color: #f8f9fa;  /* Cor de fundo suave */
+  background-color: #f8f9fa;  
   margin: 60px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
   border-radius: 10px;
 }
 
-/* Título "Ask a Question" */
+
 #ask-question h1 {
   font-size: 2.5rem;
   font-weight: 600;
-  margin-bottom: 30px;  /* Espaçamento abaixo do título */
+  margin-bottom: 30px;  
   text-align: center;
   color: #003366;
 }
 
-/* Estilo para o formulário */
+
 #ask-question form {
   width: 100%;
-  max-width: 600px;  /* Limita a largura do formulário */
+  max-width: 600px;  
   background-color: #fff;
   padding: 30px;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilo para os campos do formulário */
+
 #ask-question .form-group label {
   font-weight: 500;
   color: #003366;
@@ -521,7 +520,7 @@ footer a:hover {
   font-size: 1rem;
 }
 
-/* Estilo para o botão de envio */
+
 #ask-question .button {
   background-color: #003366;
   color: white;
@@ -544,10 +543,10 @@ footer a:hover {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
 }
 
-/* Estilo para a mensagem de erro */
+
 .alert-danger {
   width: 100%;
-  max-width: 600px;  /* Limita a largura da mensagem de erro */
+  max-width: 600px;  
   margin-bottom: 20px;
   background-color: #f8d7da;
   color: #721c24;
@@ -630,18 +629,18 @@ footer a:hover {
 
 
 .answer {
-  background-color: #f0f0f0;  /* Cor de fundo */
-  border-radius: 8px;  /* Bordas arredondadas */
-  padding: 20px;  /* Espaçamento interno */
-  margin-bottom: 20px;  /* Espaço entre os cartões */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);  /* Sombra suave */
-  transition: transform 0.3s, box-shadow 0.3s;  /* Transição suave para o efeito de hover */
+  background-color: #f0f0f0;  
+  border-radius: 8px;  
+  padding: 20px;  
+  margin-bottom: 20px;  
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);  
+  transition: transform 0.3s, box-shadow 0.3s; 
 }
 
 
 .answer:hover {
-  transform: translateY(-5px);  /* Move o cartão para cima */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);  /* Aumenta a sombra para dar destaque */
+  transform: translateY(-5px); 
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);  
 }
 
 
@@ -662,34 +661,34 @@ footer a:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;  /* Garante que o conteúdo ocupe toda a altura da página */
+  min-height: 100vh;  
   padding: 20px;
-  background-color: #f8f9fa;  /* Cor de fundo suave */
+  background-color: #f8f9fa; 
   margin: 60px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
   border-radius: 10px;
 }
 
-/* Título "Edit Answer" */
+
 #edit-answer h1 {
   font-size: 2.5rem;
   font-weight: 600;
-  margin-bottom: 30px;  /* Espaçamento abaixo do título */
+  margin-bottom: 30px;  
   text-align: center;
   color: #003366;
 }
 
-/* Estilo para o formulário */
+
 #edit-answer form {
   width: 100%;
-  max-width: 600px;  /* Limita a largura do formulário */
+  max-width: 600px;  
   background-color: #fff;
   padding: 30px;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilo para os campos do formulário */
+
 #edit-answer .form-group label {
   font-weight: 500;
   color: #003366;
@@ -705,7 +704,7 @@ footer a:hover {
   font-size: 1rem;
 }
 
-/* Estilo para o botão de envio */
+
 #edit-answer button {
   background-color: #003366;
   color: white;
@@ -728,10 +727,10 @@ footer a:hover {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
 }
 
-/* Estilo para a mensagem de erro */
+
 .alert-danger {
   width: 100%;
-  max-width: 600px;  /* Limita a largura da mensagem de erro */
+  max-width: 600px;  
   margin-bottom: 20px;
   background-color: #f8d7da;
   color: #721c24;
@@ -748,34 +747,34 @@ footer a:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;  /* Garante que o conteúdo ocupe toda a altura da página */
+  min-height: 100vh;  
   padding: 20px;
-  background-color: #f8f9fa;  /* Cor de fundo suave */
+  background-color: #f8f9fa; 
   margin: 60px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
   border-radius: 10px;
 }
 
-/* Título "Edit Question" */
+
 #edit-question h1 {
   font-size: 2.5rem;
   font-weight: 600;
-  margin-bottom: 30px;  /* Espaçamento abaixo do título */
+  margin-bottom: 30px; 
   text-align: center;
   color: #003366;
 }
 
-/* Estilo para o formulário */
+
 #edit-question form {
   width: 100%;
-  max-width: 600px;  /* Limita a largura do formulário */
+  max-width: 600px;  
   background-color: #fff;
   padding: 30px;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilo para os campos do formulário */
+
 #edit-question .form-group label {
   font-weight: 500;
   color: #003366;
@@ -815,10 +814,10 @@ footer a:hover {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
 }
 
-/* Estilo para a mensagem de erro */
+
 .alert-danger {
   width: 100%;
-  max-width: 600px;  /* Limita a largura da mensagem de erro */
+  max-width: 600px;  
   margin-bottom: 20px;
   background-color: #f8d7da;
   color: #721c24;
@@ -834,9 +833,9 @@ footer a:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh; /* Garante que o conteúdo ocupe toda a altura da página */
+  min-height: 100vh; 
   padding: 20px;
-  background-color: #f8f9fa; /* Cor de fundo suave */
+  background-color: #f8f9fa; 
   margin: 60px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
   border-radius: 10px;
@@ -846,22 +845,22 @@ footer a:hover {
 #edit-profile h1 {
   font-size: 2.5rem;
   font-weight: 600;
-  margin-bottom: 30px; /* Espaçamento abaixo do título */
+  margin-bottom: 30px; 
   text-align: center;
   color: #003366;
 }
 
-/* Estilo para o formulário */
+
 #edit-profile form {
   width: 100%;
-  max-width: 600px; /* Limita a largura do formulário */
+  max-width: 600px; 
   background-color: #fff;
   padding: 30px;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilo para os campos do formulário */
+
 #edit-profile .form-group label {
   font-weight: 500;
   color: #003366;
@@ -878,7 +877,7 @@ footer a:hover {
   font-size: 1rem;
 }
 
-/* Estilo para o botão de envio */
+
 #edit-profile .button {
   background-color: #003366;
   color: white;
@@ -901,7 +900,7 @@ footer a:hover {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
 }
 
-/* Estilo para mensagens de sucesso/erro */
+
 .alert-success {
   width: 100%;
   max-width: 600px;
@@ -926,14 +925,14 @@ footer a:hover {
 
 #search-results {
   padding: 20px;
-  margin: 60px auto; /* Centraliza o conteúdo */
+  margin: 60px auto; 
   max-width: 800px;
   background-color: #f9f9f9;
   border-radius: 10px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Título dos resultados */
+
 #search-results h1 {
   font-size: 2.5rem;
   color: #003366;
@@ -942,18 +941,18 @@ footer a:hover {
   text-align: center;
 }
 
-/* Mensagem de nenhum resultado encontrado */
+
 #search-results .no-results {
   font-size: 1.2rem;
   color: #555;
   text-align: center;
 }
 
-/* Lista de resultados */
+
 .results-list {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Espaçamento entre os cartões */
+  gap: 20px; 
 }
 
 
@@ -964,26 +963,26 @@ footer a:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;  /* Garante que o conteúdo ocupe toda a altura da página */
+  min-height: 100vh;  
   padding: 20px;
-  background-color: #f8f9fa;  /* Cor de fundo suave */
+  background-color: #f8f9fa;  
   margin: 60px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
   border-radius: 10px;
 }
 
 
-/* Estilo do formulário de login */
+
 #login-section form {
   width: 100%;
-  max-width: 400px; /* Limita a largura do formulário */
+  max-width: 400px; 
   background-color: #ffffff;
   padding: 30px;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilo para os labels */
+
 #login-section form label {
   font-weight: 600;
   color: #003366;
@@ -991,7 +990,7 @@ footer a:hover {
   display: block;
 }
 
-/* Botão de Login */
+
 #login-section form button {
   background-color: #003366;
   color: #ffffff;
@@ -1012,7 +1011,7 @@ footer a:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Link de registo */
+
 #login-section .button-outline {
   background-color: transparent;
   border: 2px solid #003366;
@@ -1037,7 +1036,7 @@ footer a:hover {
   color: #ffffff;
 }
 
-/* Mensagens de erro */
+
 #login-section .error {
   color: #721c24;
   background-color: #f8d7da;
@@ -1049,7 +1048,7 @@ footer a:hover {
   font-size: 0.9rem;
 }
 
-/* Mensagens de sucesso */
+
 #login-section .success {
   color: #155724;
   background-color: #d4edda;
@@ -1068,25 +1067,25 @@ footer a:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh; /* Garante que o conteúdo ocupe toda a altura da página */
+  min-height: 100vh; 
   padding: 20px;
-  background-color: #f8f9fa; /* Cor de fundo suave */
+  background-color: #f8f9fa; 
   margin: 60px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
   border-radius: 10px;
 }
 
-/* Estilo do formulário de registo */
+
 #register-section form {
   width: 100%;
-  max-width: 400px; /* Limita a largura do formulário */
+  max-width: 400px; 
   background-color: #ffffff;
   padding: 30px;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilo dos labels */
+
 #register-section form label {
   font-weight: 600;
   color: #003366;
@@ -1094,7 +1093,7 @@ footer a:hover {
   display: block;
 }
 
-/* Campos de entrada (input) */
+
 #register-section form input {
   max-width: 350px;
   width: 100%;
@@ -1105,7 +1104,7 @@ footer a:hover {
   font-size: 1rem;
 }
 
-/* Botão de registo */
+
 #register-section form button {
   background-color: #003366;
   color: #ffffff;
@@ -1126,7 +1125,7 @@ footer a:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Botão alternativo (Login) */
+
 #register-section .button-outline {
   background-color: transparent;
   border: 2px solid #003366;
@@ -1148,7 +1147,7 @@ footer a:hover {
   color: #ffffff;
 }
 
-/* Mensagens de erro */
+
 #register-section .error {
   color: #721c24;
   background-color: #f8d7da;
@@ -1160,7 +1159,7 @@ footer a:hover {
   font-size: 0.9rem;
 }
 
-/* Mensagens de sucesso */
+
 #register-section .success {
   color: #155724;
   background-color: #d4edda;

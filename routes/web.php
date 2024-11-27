@@ -92,12 +92,18 @@ Route::controller(RegisterController::class)->group(function () {
 });
 
 // User Profile
-Route::get('/profile/edit', [UserProfileController::class, 'editProfile'])->name('profile.edit');
-Route::get('/profile/search', [UserProfileController::class, 'search'])->name('profile.search');
-Route::patch('/profile/edit', [UserProfileController::class, 'updateProfile'])->name('profile.update');
-Route::get('/profile/{username}', [UserProfileController::class, 'showProfile'])->name('profile.show');
-Route::delete('/profile/{username}', [UserProfileController::class, 'deleteUser'])->name('profile.delete');
-Route::patch('/profile/{username}/ban', [UserProfileController::class, 'toggleBan'])->name('profile.toggleBan');
+Route::controller(UserProfileController::class)->group(function () {
+    Route::get('/profile/edit', [UserProfileController::class, 'editProfile'])->name('profile.edit');
+    Route::get('/profile/search', [UserProfileController::class, 'search'])->name('profile.search');
+    Route::patch('/profile/edit', [UserProfileController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/profile/{username}', [UserProfileController::class, 'showProfile'])->name('profile.show');
+    Route::delete('/profile/{username}', [UserProfileController::class, 'deleteUser'])->name('profile.delete');
+    Route::patch('/profile/{username}/ban', [UserProfileController::class, 'toggleBan'])->name('profile.toggleBan');
+    Route::get('/profile/{username}/edit', [UserProfileController::class, 'editProfile'])
+        ->name('profile.editAny');
+    Route::patch('/profile/{username}', [UserProfileController::class, 'updateProfile'])
+        ->name('profile.updateAny');
+});
 
 
 
