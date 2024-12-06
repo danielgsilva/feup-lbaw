@@ -12,17 +12,17 @@
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
-                <form class="d-flex me-auto" role="search" action="{{ route('questions.search') }}" method="GET">
-                    <input class="form-control" type="search" placeholder="Search questions..." aria-label="Search" name="query" required>
-                    <button class="btn btn-primary" type="submit">Search</button>
+                <form class="d-flex me-auto mt-2" role="search" action="{{ route('questions.search') }}" method="GET">
+                    <input class="form-control " type="search" placeholder="Search questions..." aria-label="Search" name="query" required>
+                    <button class="btn btn-primary ms-2" type="submit">Search</button>
                 </form>
 
                 @if (Auth::check())
-                <div class="dropdown">
+                <div class="dropdown mt-1">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">{{ Auth::user()->name }}</button>
                     <ul class="dropdown-menu">
                         <li><a href="{{ url('/profile/' . Auth::user()->username) }}" class="dropdown-item">Profile</a></li>
-                        <li><a href="{{ url('/notifications') }}" class="dropdown-item">Notifications</a></li>
+                        <li><a href="{{ url(path: '/notifications') }}" class="dropdown-item">Notifications</a></li>
                         <!--
                         @if (Auth::user()->admin)
                         <li>
