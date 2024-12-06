@@ -19,18 +19,24 @@
 
                 @if (Auth::check())
                 <div class="dropdown">
-                    <button class="dropbtn">{{ Auth::user()->name }}</button>
-                    <div class="dropdown-content">
-                        <a href="{{ url('/profile/' . Auth::user()->username) }}">Profile</a>
-                        <a href="{{ url('/notifications') }}">Notifications</a>
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">{{ Auth::user()->name }}</button>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ url('/profile/' . Auth::user()->username) }}" class="dropdown-item">Profile</a></li>
+                        <li><a href="{{ url('/notifications') }}" class="dropdown-item">Notifications</a></li>
+                        <!--
                         @if (Auth::user()->admin)
-                        <form action="{{ route('profile.search') }}" method="GET" style="margin: 10px;">
-                            <input type="text" name="query" placeholder="Search Profiles" required>
-                            <button type="submit">Search</button>
-                        </form>
+                        <li>
+                            <form action="{{ route('profile.search') }}" method="GET" style="margin: 10px;">
+                                <input type="text" name="query" placeholder="Search Profiles" required>
+                                <button type="submit">Search</button>
+                            </form>
+                        </li>
                         @endif
-                        <a href="{{ url('/logout') }}">Logout</a>
-                    </div>
+
+                        This should become a button to lead you to a user search page.
+                        -->
+                        <li><a href="{{ url('/logout') }}" class="dropdown-item">Logout</a></li>
+                    </ul>
                 </div>
                 @else
                 <div class="log">
