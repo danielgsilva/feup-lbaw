@@ -111,4 +111,46 @@ class QuestionController extends Controller
 
         return view('pages.search', compact('questions', 'search')); 
     }
+
+    public function vote(Request $request, $id)
+    {
+        // Ensure the value is valid (either upvote or downvote)
+        $request->validate([
+            'vote' => 'required|in:1,-1', // 1 for upvote, -1 for downvote
+        ]);
+    
+        $question = Question::findOrFail($id);
+        $user = Auth::user();
+    
+        // Check if the user has already voted on this question
+        $existingVote = DB::table('question_vote')
+            ->where('id_user', $user->id)
+            ->where('id_question', $question->id)
+            ->first();
+    
+        if ($existingVote) {
+            // Update the vote if the user already voted
+            DB::table('question_vote')
+                ->where('id_user', $user->id)
+                ->where('id_question', $question->id)
+                ->update(['value' => $request->vote]);
+        } else {
+            // Create a new vote
+            DB::table('question_vote')->insert([
+                'id_user' => $user->id,
+                'id_question' => $question->id,
+                'value' => $request->vote,
+            ]);
+        }
+    
+        // Update the total vote count
+        $question->votes = DB::table('question_vote')
+            ->where('id_question', $question->id)
+            ->sum('value');
+        
+        $question->save();
+    
+        return back();
+    }
+    
 }

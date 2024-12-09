@@ -28,13 +28,32 @@
                 @endif
             </div>
             <div>
-                <button class="btn btn-outline-success btn-sm me-2">
-                    <i class="bi bi-hand-thumbs-up"></i> Like
-                </button>
-                <button class="btn btn-outline-danger btn-sm">
-                    <i class="bi bi-hand-thumbs-down"></i> Dislike
-                </button>
-                <span class="badge bg-secondary ms-2">Votes: {{ $question->votes }}</span>
+            <button class="btn btn-outline-success btn-sm me-2" onclick="voteq({{ $question->id }}, 1)">
+                <i class="bi bi-hand-thumbs-up"></i> Like
+            </button>
+            <button class="btn btn-outline-danger btn-sm" onclick="voteq({{ $question->id }}, -1)">
+                <i class="bi bi-hand-thumbs-down"></i> Dislike
+            </button>
+            <span class="badge bg-secondary ms-2">Votes: {{ $question->votes }}</span>
+
+            <script>
+            function voteq(questionId, voteValue) {
+                fetch(`/questions/${questionId}/vote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ vote: voteValue })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Optionally, update the UI with the new vote count
+                    location.reload();
+                });
+            }
+            </script>
+
             </div>
         </div>
     </div>
@@ -94,13 +113,32 @@
                     on {{ $answer->date }}
                 </div>
                 <div>
-                    <button class="btn btn-outline-success btn-sm me-2">
-                        <i class="bi bi-hand-thumbs-up"></i> Like
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm">
-                        <i class="bi bi-hand-thumbs-down"></i> Dislike
-                    </button>
-                    <span class="badge bg-secondary ms-2">Votes: {{ $answer->votes }}</span>
+                <button class="btn btn-outline-success btn-sm me-2" onclick="votea({{ $answer->id }}, 1)">
+                    <i class="bi bi-hand-thumbs-up"></i> Like
+                </button>
+                <button class="btn btn-outline-danger btn-sm" onclick="votea({{ $answer->id }}, -1)">
+                    <i class="bi bi-hand-thumbs-down"></i> Dislike
+                </button>
+                <span class="badge bg-secondary ms-2">Votes: {{ $answer->votes }}</span>
+
+                <script>
+                function votea(answerId, voteValue) {
+                    fetch(`/answers/${answerId}/vote`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ vote: voteValue })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Optionally, update the UI with the new vote count
+                        location.reload();
+                    });
+                }
+                </script>
+
                 </div>
             </div>
             @if (Auth::check() && Auth::id() === $answer->id_user)
