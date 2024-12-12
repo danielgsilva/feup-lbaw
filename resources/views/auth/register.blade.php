@@ -1,49 +1,57 @@
 @extends('layouts.app')
 
 @section('content')
-<div id="register-section">
-    <form method="POST" action="{{ route('register') }}">
-        {{ csrf_field() }}
+<form method="POST" class="ms-5 me-5" action="{{ route('register') }}">
+    {{ csrf_field() }}
 
-        <label for="username">Username</label>
-        <input id="username" type="text" name="username" value="{{ old('username') }}" required autofocus>
+    <div data-mdb-input-init class="form-outline mb-4">
+        <label for="username" class="form-label">Username</label>
+        <input class="form-control" id="username" type="text" name="username" value="{{ old('username') }}" required autofocus>
         @if ($errors->has('username'))
-            <span class="error">
+            <span class="error --bs-danger">
                 {{ $errors->first('username') }}
             </span>
         @endif
+    </div>
 
-        <label for="name">Name</label>
-        <input id="name" type="text" name="name" value="{{ old('name') }}" required>
+    <div data-mdb-input-init class="form-outline mb-4">
+        <label for="name" class="form-label">Name</label>
+        <input class="form-control" id="name" type="text" name="name" value="{{ old('name') }}" required>
         @if ($errors->has('name'))
-            <span class="error">
+            <span class="error --bs-danger">
                 {{ $errors->first('name') }}
             </span>
         @endif
+    </div> 
 
-        <label for="email">E-Mail Address</label>
-        <input id="email" type="email" name="email" value="{{ old('email') }}" required>
+    <div data-mdb-input-init class="form-outline mb-4">
+        <label for="email" class="form-label">E-Mail Address</label>
+        <input class="form-control" id="email" type="email" name="email" value="{{ old('email') }}" required>
         @if ($errors->has('email'))
-            <span class="error">
+            <span class="error --bs-danger">
                 {{ $errors->first('email') }}
             </span>
         @endif
+    </div>
 
-        <label for="password">Password</label>
-        <input id="password" type="password" name="password" required>
+    <div data-mdb-input-init class="form-outline mb-4">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-control" id="password" type="password" name="password" required>
         @if ($errors->has('password'))
-            <span class="error">
+            <span class="error --bs-danger">
                 {{ $errors->first('password') }}
             </span>
         @endif
+    </div>
 
-        <label for="password-confirm">Confirm Password</label>
-        <input id="password-confirm" type="password" name="password_confirmation" required>
+    <div data-mdb-input-init class="form-outline mb-4">
+        <label class="form-label" for="password-confirm">Confirm Password</label>
+        <input class="form-control" id="password-confirm" type="password" name="password_confirmation" required>
+    </div>
 
-        <button type="submit">
-            Register
-        </button>
-        <a class="button-outline" href="{{ route('login') }}">Login</a>
-    </form>
-</div>
+    <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-4">
+        Register
+    </button>
+    <a class="button-outline" href="{{ route('login') }}">Login</a>
+</form>
 @endsection

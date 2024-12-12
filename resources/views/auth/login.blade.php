@@ -8,7 +8,7 @@
         <label for="email" class="form-label">E-mail</label>
         <input id="email" class="form-control" type="email" name="email" value="{{ old('email') }}" required autofocus>
         @if ($errors->has('email'))
-            <span class="error">
+            <span class="error --bs-danger">
                 {{ $errors->first('email') }}
             </span>
         @endif
@@ -18,7 +18,7 @@
         <label for="password" class="form-label">Password</label>
         <input id="password" class="form-control" type="password" name="password" required>
         @if ($errors->has('password'))
-            <span class="error">
+            <span class="error --bs-danger">
                 {{ $errors->first('password') }}
             </span>
         @endif
@@ -42,7 +42,7 @@
         </div>
         
         @if (session('success'))
-            <p class="success">
+            <p class="success --bs-success">
                 {{ session('success') }}
             </p>
         @endif
