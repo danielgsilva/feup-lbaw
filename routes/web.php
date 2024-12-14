@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\CommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -77,6 +78,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('profile.editAny');
     Route::patch('/profile/{username}', [UserProfileController::class, 'updateProfile'])
         ->name('profile.updateAny');
+    Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
 });
 
 // Authentication
@@ -105,7 +107,12 @@ Route::controller(UserProfileController::class)->group(function () {
         ->name('profile.updateAny');
 });
 
-
+Route::controller(CommentController::class)->group(function () {
+    Route::post('/comments', 'store')->name('comments.store');
+    Route::get('/comments/{id}/edit', 'edit')->name('comments.edit');
+    Route::put('/comments/{id}', 'update')->name('comments.update');
+    Route::delete('/comments/{id}', 'destroy')->name('comments.destroy');
+});
 
 // Votes
 Route::post('/questions/{id}/vote', [QuestionController::class, 'vote'])->name('questions.vote');

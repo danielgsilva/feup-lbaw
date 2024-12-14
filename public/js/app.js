@@ -18,6 +18,11 @@ function addEventListeners() {
   if (toggleAnswerFormButton) {
     toggleAnswerFormButton.addEventListener('click', toggleAnswerForm);
   }
+
+  let toggleCommentFormButton = document.getElementById('toggle-comment-form');
+  if(toggleCommentFormButton) {
+    toggleCommentFormButton.addEventListener('click', toggleCommentForm);
+  }
 }
 
 function encodeForAjax(data) {
@@ -71,6 +76,15 @@ function toggleAnswerForm() {
     answerForm.style.display = 'block';
   } else {
     answerForm.style.display = 'none';
+  }
+}
+
+function toggleCommentForm() {
+  var commentForm = document.getElementById('comment-form');
+  if (commentForm.style.display === 'none') {
+    commentForm.style.display = 'block';
+  } else {
+    commentForm.style.display = 'none';
   }
 }
 
