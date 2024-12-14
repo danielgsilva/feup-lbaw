@@ -20,9 +20,10 @@ class QuestionController extends Controller
     {
         $question = Question::findOrFail($id);
         $order = $request->input('order', 'votes');
-        $answers = $question->answers()->orderBy($order,'desc')->paginate(5);
-        $comments = $question->comments()->get();
-        return view('pages.showQuestion', compact('question', 'answers', 'comments', 'order'));
+        $show = $request->input('show', 'answers');
+        $answers = $question->answers()->orderBy($order, 'desc')->paginate(5);
+        $comments = $question->comments()->orderBy('date', 'desc')->paginate(5);
+        return view('pages.showQuestion', compact('question', 'answers', 'comments', 'order', 'show'));
     }
 
     public function create()
