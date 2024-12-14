@@ -5,19 +5,9 @@
     <form method="POST" class="ms-5 me-5" action="{{ route('register') }}" enctype="multipart/form-data">
         {{ csrf_field() }}
 
-        <div class="text-center mb-4 mt-4">
-            <div class="d-flex flex-column align-items-center">
-                <div class="profile-image-container mb-3">
-                    <img src="{{ asset('storage/profile_images/default.png') }}" 
-                         alt="profile image" 
-                         class="rounded-circle img-thumbnail p-4">
-                </div>
-                <label for="profile_image" class="btn btn-secondary btn-sm mt-3">
-                    Choose Profile Image
-                    <input id="profile_image" type="file" name="profile_image" hidden>
-                </label>
-            </div>
-        </div>
+        <img src="{{asset('storage/profile_images/default.png')}}" alt="profile image">
+        <input id="profile_image" type="file" name="profile_image">
+        <label for="profile_image">Profile Image</label>
         <!-- Images are not working -->
 
         <div data-mdb-input-init class="form-outline mb-4">
