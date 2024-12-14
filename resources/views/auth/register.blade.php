@@ -1,12 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
-<form method="POST" class="ms-5 me-5" action="{{ route('register') }}">
-    {{ csrf_field() }}
+<div id="register-section">
+    <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data">
+        {{ csrf_field() }}
 
-    <div data-mdb-input-init class="form-outline mb-4">
-        <label for="username" class="form-label">Username</label>
-        <input class="form-control" id="username" type="text" name="username" value="{{ old('username') }}" required autofocus>
+        <img src="{{asset('storage/profile_images/default.png')}}" alt="profile image">
+        <input id="profile_image" type="file" name="profile_image">
+        <label for="profile_image">Profile Image</label>
+
+        <label for="username">Username</label>
+        <input id="username" type="text" name="username" value="{{ old('username') }}" required autofocus>
         @if ($errors->has('username'))
             <span class="error --bs-danger">
                 {{ $errors->first('username') }}

@@ -10,6 +10,8 @@ use Laravel\Sanctum\HasApiTokens;
 
 // Added to define Eloquent relationships.
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -83,5 +85,10 @@ class User extends Authenticatable
     public function tags() : BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'follow_tag', 'id_user', 'id_tag');
+    }
+
+    public function image() : HasOne
+    {
+        return $this->hasOne(Image::class, 'id_user');
     }
 }

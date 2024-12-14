@@ -8,6 +8,7 @@
     <div class="card profile-card">
         <div class="card-body">
             <h3>{{ $user->name }}</h3>
+            <img src="{{ asset('storage/' . $user->image->image_path) }}" alt="profile image">
             <p><strong>Username:</strong> {{ $user->username }}</p>
             <p><strong>Email:</strong> {{ $user->email }}</p>
             <p><strong>Bio:</strong> 
