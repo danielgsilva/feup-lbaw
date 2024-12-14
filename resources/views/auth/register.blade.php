@@ -8,7 +8,6 @@
         <img src="{{asset('storage/profile_images/default.png')}}" alt="profile image">
         <input id="profile_image" type="file" name="profile_image">
         <label for="profile_image">Profile Image</label>
-        <!-- Images are not working -->
 
         <div data-mdb-input-init class="form-outline mb-4">
             <label for="username" class="form-label">Username</label>

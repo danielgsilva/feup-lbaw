@@ -9,12 +9,10 @@
         <div class="card-body text-center">
             <h3 class="card-title">{{ $user->name }}</h3>
             
-            @if ($user->image)
-                <img src="{{ asset('storage/' . $user->image->image_path) }}" 
-                     alt="profile image" 
-                     class="img-fluid rounded-circle my-3" 
-                     style="width: 150px; height: 150px; object-fit: cover;">
-            @endif
+            <img src="{{ $user->image ? asset('storage/' . $user->image->image_path) : asset('storage/profile_images/default.png') }}" 
+                alt="profile image" 
+                class="img-fluid rounded-circle my-3" 
+                style="width: 150px; height: 150px; object-fit: cover;">
             
             <p class="mb-1"><strong>Username:</strong> {{ $user->username }}</p>
             <p class="mb-1"><strong>Email:</strong> {{ $user->email }}</p>
