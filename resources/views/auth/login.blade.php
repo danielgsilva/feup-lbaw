@@ -1,41 +1,50 @@
 @extends('layouts.app')
 
 @section('content')
-<div id="login-section">
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" class="ms-5 me-5" action="{{ route('login') }}">
         {{ csrf_field() }}
 
-        <label for="email">E-mail</label>
-        <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus>
+        <div data-mdb-input-init class="form-outline mb-4">
+        <label for="email" class="form-label">E-mail</label>
+        <input id="email" class="form-control" type="email" name="email" value="{{ old('email') }}" required autofocus>
         @if ($errors->has('email'))
-            <span class="error">
+            <span class="error --bs-danger">
                 {{ $errors->first('email') }}
             </span>
         @endif
-
-        <label for="password">Password</label>
-        <input id="password" type="password" name="password" required>
+        </div>
+        
+        <div data-mdb-input-init class="form-outline mb-4">
+        <label for="password" class="form-label">Password</label>
+        <input id="password" class="form-control" type="password" name="password" required>
         @if ($errors->has('password'))
-            <span class="error">
+            <span class="error --bs-danger">
                 {{ $errors->first('password') }}
             </span>
         @endif
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col d-flex justify-content-center">
+              <!-- Checkbox -->
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="remember" name="remember" {{ old('remember') ? 'checked' : '' }}/>
+                <label class="form-check-label" for="remember"> Remember me </label>
+              </div>
+            </div>
 
-        <label>
-            <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}> Remember Me
-        </label>
-
-        <button type="submit">
+        <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-4">
             Login
         </button>
-        
-        <a class="button-outline" href="{{ route('register') }}">Register</a>
+
+        <div class="text-center">
+            <p>Not a member? <a href="{{ route('register') }}">Register</a></p>
+        </div>
         
         @if (session('success'))
-            <p class="success">
+            <p class="success --bs-success">
                 {{ session('success') }}
             </p>
         @endif
     </form>
-</div>
 @endsection

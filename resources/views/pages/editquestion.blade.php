@@ -1,20 +1,35 @@
 @extends('layouts.app')
 
+@section('title', 'Edit Question')
+
 @section('content')
-<div id="edit-question">
-    <h1>Edit Question</h1>
-    <form action="{{ route('questions.update', $question->id) }}" method="POST">
-        @csrf
-        @method('PUT')
-        <div class="form-group">
-            <label for="title" class="form-label">Title</label>
-            <input type="text" name="title" class="form-control" value="{{ $question->title }}">
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title">Edit Question</h1>
         </div>
-        <div class="form-group">
-            <label for="body" class="form-label">Body</label>
-            <textarea name="content" class="form-control" rows="5">{{ $question->content }}</textarea>
+        <div class="card-body">
+            <form action="{{ route('questions.update', $question->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                
+                <!-- Title Input -->
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" name="title" id="title" class="form-control" value="{{ $question->title }}" required>
+                </div>
+
+                <!-- Body Input -->
+                <div class="mb-3">
+                    <label for="content" class="form-label">Body</label>
+                    <textarea name="content" id="content" class="form-control" rows="5" required>{{ $question->content }}</textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-success">Update Question</button>
+                <a href="{{ route('questions.show', $question->id) }}" class="btn btn-secondary">Cancel</a>
+            </form>
         </div>
-        <button type="submit" class="btn btn-primary">Change Question</button>
-    </form>
+    </div>
 </div>
 @endsection
