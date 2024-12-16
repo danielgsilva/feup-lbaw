@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Answer;
 use App\Models\Question;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AnswerController extends Controller
 {
@@ -96,7 +97,7 @@ class AnswerController extends Controller
     }
 
     public function showComments($id) {
-        
+
         $answer = Answer::with('comments.user')->findOrFail($id);
         $question = $answer->question;
         $comments = $answer->comments()->paginate(5);  
