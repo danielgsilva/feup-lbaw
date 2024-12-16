@@ -54,6 +54,7 @@ Route::controller(QuestionController::class)->group(function () {
 // Answers
 Route::controller(AnswerController::class)->group(function () {
     Route::get('/questions/{id}/answer/create', 'create')->name('answers.create');
+    Route::get('/answers/{id}/comments', [AnswerController::class, 'showComments'])->name('answers.comments');
     Route::post('/answers', [AnswerController::class, 'store'])->name('answers.store');
 
     // Edit and delete answer

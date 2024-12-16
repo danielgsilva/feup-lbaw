@@ -95,6 +95,15 @@ class AnswerController extends Controller
         return redirect()->route('questions.show', $answer->id_question)->with('success', 'Your answer has been deleted.');
     }
 
+    public function showComments($id) {
+        
+        $answer = Answer::with('comments.user')->findOrFail($id);
+        $question = $answer->question;
+        $comments = $answer->comments()->paginate(5);  
+
+        return view('pages.showComments', compact('answer', 'question', 'comments'));
+    }
+
     public function vote(Request $request, $id)
     {
         // Ensure the value is valid (either upvote or downvote)
