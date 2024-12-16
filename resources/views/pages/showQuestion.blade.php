@@ -28,10 +28,12 @@
                 @endif
             </div>
             <div>
-            <button class="btn btn-outline-success btn-sm me-2" onclick="voteq({{ $question->id }}, 1)">
+            <button id="like-button" class="btn btn-outline-success btn-sm me-2 
+                @if($userVote == 1) bg-success text-white @endif" onclick="voteq({{ $question->id }}, 1)">
                 <i class="bi bi-hand-thumbs-up"></i> Like
             </button>
-            <button class="btn btn-outline-danger btn-sm" onclick="voteq({{ $question->id }}, -1)">
+            <button id="dislike-button" class="btn btn-outline-danger btn-sm 
+                @if($userVote == -1) bg-danger text-white @endif" onclick="voteq({{ $question->id }}, -1)">
                 <i class="bi bi-hand-thumbs-down"></i> Dislike
             </button>
             <span class="badge bg-secondary ms-2">Votes: {{ $question->votes }}</span>
@@ -48,8 +50,20 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // Optionally, update the UI with the new vote count
-                    location.reload();
+                    // Update the vote count
+                    document.querySelector('.badge').textContent = `Votes: ${data.votes}`;
+                    
+                    // Highlight buttons based on user vote
+                    if (data.userVote === 1) {
+                        document.getElementById('like-button').classList.add('bg-success', 'text-white');
+                        document.getElementById('dislike-button').classList.remove('bg-danger', 'text-white');
+                    } else if (data.userVote === -1) {
+                        document.getElementById('like-button').classList.remove('bg-success', 'text-white');
+                        document.getElementById('dislike-button').classList.add('bg-danger', 'text-white');
+                    } else {
+                        document.getElementById('like-button').classList.remove('bg-success', 'text-white');
+                        document.getElementById('dislike-button').classList.remove('bg-danger', 'text-white');
+                    }
                 });
             }
             </script>
@@ -155,10 +169,18 @@
                         <a href="{{ route('answers.comments', $answer->id)}}" class="btn btn-outline-secondary btn-sm ms-2">Comments: {{ $answer->comments->count() }}</a>
                     </div>
                     <div>
-                    <button class="btn btn-outline-success btn-sm me-2" onclick="votea({{ $answer->id }}, 1)">
+                    <button 
+                        id="like-answer-{{ $answer->id }}" 
+                        class="btn btn-outline-success btn-sm me-2 
+                            @if($answer->userVote === 1) bg-success text-white @endif"
+                        onclick="votea({{ $answer->id }}, 1)">
                         <i class="bi bi-hand-thumbs-up"></i> Like
                     </button>
-                    <button class="btn btn-outline-danger btn-sm" onclick="votea({{ $answer->id }}, -1)">
+                    <button 
+                        id="dislike-answer-{{ $answer->id }}" 
+                        class="btn btn-outline-danger btn-sm 
+                            @if($answer->userVote === -1) bg-danger text-white @endif"
+                        onclick="votea({{ $answer->id }}, -1)">
                         <i class="bi bi-hand-thumbs-down"></i> Dislike
                     </button>
                     <span class="badge bg-secondary ms-2 mt-2">Votes: {{ $answer->votes }}</span>
@@ -175,10 +197,31 @@
                         })
                         .then(response => response.json())
                         .then(data => {
-                            location.reload();
+                            // Update the vote count
+                            const voteBadge = document.querySelector(`#answer-${answerId} .badge`);
+                            voteBadge.textContent = `Votes: ${data.votes}`;
+
+                            // Toggle button styles based on the user's current vote
+                            const likeButton = document.getElementById(`like-answer-${answerId}`);
+                            const dislikeButton = document.getElementById(`dislike-answer-${answerId}`);
+
+                            if (data.userVote === 1) {
+                                likeButton.classList.add('bg-success', 'text-white');
+                                dislikeButton.classList.remove('bg-danger', 'text-white');
+                            } else if (data.userVote === -1) {
+                                likeButton.classList.remove('bg-success', 'text-white');
+                                dislikeButton.classList.add('bg-danger', 'text-white');
+                            } else {
+                                likeButton.classList.remove('bg-success', 'text-white');
+                                dislikeButton.classList.remove('bg-danger', 'text-white');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Something went wrong. Please try again.');
                         });
                     }
-                    </script>
+                </script>
 
                     </div>
                 </div>

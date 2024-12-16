@@ -109,7 +109,7 @@ class AnswerController extends Controller
     {
         // Ensure the value is valid (either upvote or downvote)
         $request->validate([
-            'vote' => 'required|in:1,-1,0', // 1 for upvote, -1 for downvote, 0 to remove vote
+            'vote' => 'required|in:1,-1', // 1 for upvote, -1 for downvote
         ]);
     
         $answer = Answer::findOrFail($id);

@@ -23,8 +23,14 @@ class QuestionController extends Controller
         $show = $request->input('show', 'answers');
         $answers = $question->answers()->orderBy($order, 'desc')->paginate(5);
         $comments = $question->comments()->orderBy('date', 'desc')->paginate(5);
-        return view('pages.showQuestion', compact('question', 'answers', 'comments', 'order', 'show'));
+        $userVote = DB::table('question_vote')
+            ->where('id_user', Auth::id())
+            ->where('id_question', $question->id)
+            ->value('value') ?? 0;
+
+        return view('pages.showQuestion', compact('question', 'answers', 'comments', 'order', 'show', 'userVote'));
     }
+
 
     public function create()
     {
