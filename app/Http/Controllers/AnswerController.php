@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Answer;
 use App\Models\Question;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AnswerController extends Controller
 {
@@ -93,6 +94,15 @@ class AnswerController extends Controller
         $answer->delete();
 
         return redirect()->route('questions.show', $answer->id_question)->with('success', 'Your answer has been deleted.');
+    }
+
+    public function showComments($id) {
+
+        $answer = Answer::with('comments.user')->findOrFail($id);
+        $question = $answer->question;
+        $comments = $answer->comments()->paginate(5);  
+
+        return view('pages.showComments', compact('answer', 'question', 'comments'));
     }
 
     public function vote(Request $request, $id)

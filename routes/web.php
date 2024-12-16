@@ -54,6 +54,7 @@ Route::controller(QuestionController::class)->group(function () {
 // Answers
 Route::controller(AnswerController::class)->group(function () {
     Route::get('/questions/{id}/answer/create', 'create')->name('answers.create');
+    Route::get('/answers/{id}/comments', [AnswerController::class, 'showComments'])->name('answers.comments');
     Route::post('/answers', [AnswerController::class, 'store'])->name('answers.store');
 
     // Edit and delete answer
@@ -117,7 +118,5 @@ Route::controller(CommentController::class)->group(function () {
 // Votes
 Route::post('/questions/{id}/vote', [QuestionController::class, 'vote'])->name('questions.vote');
 
-//nao sei como fazer esta , tentei com /questions mas tbm nao funcionou
-//deixo assim para parecer mais intuitivo o que faz
 Route::post('/answers/{id}/vote', [AnswerController::class, 'vote'])->name('answers.vote');
 
