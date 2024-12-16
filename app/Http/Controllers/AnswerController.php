@@ -109,7 +109,7 @@ class AnswerController extends Controller
     {
         // Ensure the value is valid (either upvote or downvote)
         $request->validate([
-            'vote' => 'required|in:1,-1', // 1 for upvote, -1 for downvote
+            'vote' => 'required|in:1,-1,0', // 1 for upvote, -1 for downvote, 0 to remove vote
         ]);
     
         $answer = Answer::findOrFail($id);
@@ -122,28 +122,48 @@ class AnswerController extends Controller
             ->first();
     
         if ($existingVote) {
-            // Update the vote if the user already voted
-            DB::table('answer_vote')
-                ->where('id_user', $user->id)
-                ->where('id_answer', $answer->id)
-                ->update(['value' => $request->vote]);
+            if ($request->vote == 0) {
+                // Remove the vote if 0
+                DB::table('answer_vote')
+                    ->where('id_user', $user->id)
+                    ->where('id_answer', $answer->id)
+                    ->delete();
+            } else {
+                // Update the vote
+                DB::table('answer_vote')
+                    ->where('id_user', $user->id)
+                    ->where('id_answer', $answer->id)
+                    ->update(['value' => $request->vote]);
+            }
         } else {
-            // Create a new vote
-            DB::table('answer_vote')->insert([
-                'id_user' => $user->id,
-                'id_answer' => $answer->id,
-                'value' => $request->vote,
-            ]);
+            if ($request->vote != 0) {
+                // Create a new vote
+                DB::table('answer_vote')->insert([
+                    'id_user' => $user->id,
+                    'id_answer' => $answer->id,
+                    'value' => $request->vote,
+                ]);
+            }
         }
     
         // Update the total vote count
         $answer->votes = DB::table('answer_vote')
             ->where('id_answer', $answer->id)
             ->sum('value');
-        
+
         $answer->save();
-    
-        return back();
+
+        // Retrieve the user's current vote
+        $userVote = DB::table('answer_vote')
+            ->where('id_user', $user->id)
+            ->where('id_answer', $answer->id)
+            ->value('value') ?? 0;
+
+        // Return a JSON response with updated vote count and user's vote
+        return response()->json([
+            'votes' => $answer->votes,
+            'userVote' => $userVote,
+        ]);
     }
     
 }
