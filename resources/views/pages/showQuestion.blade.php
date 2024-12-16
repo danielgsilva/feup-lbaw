@@ -152,7 +152,7 @@
                         Answered by:
                         <a href="{{ route('profile.show', $answer->user->username) }}">{{ $answer->user->name }}</a>
                         on {{ $answer->date }}
-                        <a href="{{ route('answers.comments', $answer->id)}}" class="btn btn-outline-secondary btn-sm">Comments: {{ $answer->comments->count() }}</a>
+                        <a href="{{ route('answers.comments', $answer->id)}}" class="btn btn-outline-secondary btn-sm ms-2">Comments: {{ $answer->comments->count() }}</a>
                     </div>
                     <div>
                     <button class="btn btn-outline-success btn-sm me-2" onclick="votea({{ $answer->id }}, 1)">
@@ -175,7 +175,6 @@
                         })
                         .then(response => response.json())
                         .then(data => {
-                            // Optionally, update the UI with the new vote count
                             location.reload();
                         });
                     }
@@ -197,7 +196,6 @@
         @endforeach
     @endif
 
-    <!-- Pagination -->
     <div class="mt-4">
         @if(request('show') === 'comments')
             {{ $comments->appends(['order' => $order, 'show' => 'comments'])->links('pagination::bootstrap-4') }}
