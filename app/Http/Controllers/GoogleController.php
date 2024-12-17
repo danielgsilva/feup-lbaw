@@ -16,7 +16,6 @@ class GoogleController extends Controller
         $google_user = Socialite::driver('google')->stateless()->user();
         $user = User::where('google_id', $google_user->getId())->first();
 
-        // If the user does not exist, create one
         if (!$user) {
             
             $new_user = User::create([

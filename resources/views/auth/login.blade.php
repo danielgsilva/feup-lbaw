@@ -50,10 +50,12 @@
                 </div>
 
                 <div class="col-12 col-md-6 mb-3">
+                    <a href="{{ route('github-auth') }}" class="text-decoration-none text-white">
                     <button type="button" class="btn w-100" style="background-color: #333; color: #FFF;">
                         <i class="fab fa-github me-2"></i>
                         Login with GitHub
                     </button>
+                    </a>
                 </div>
             </div>
 

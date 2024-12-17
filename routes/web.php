@@ -13,6 +13,7 @@ use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\GitHubController;
 
 /*
 |--------------------------------------------------------------------------
@@ -134,4 +135,7 @@ Route::controller(GoogleController::class)->group(function () {
     Route::get('auth/google/call-back', 'callbackGoogle')->name('google-call-back');
 });
 
-
+Route::controller(GitHubController::class)->group(function () {
+    Route::get('auth/github', [GitHubController::class, 'redirect'])->name('github-auth');
+    Route::get('auth/github/call-back', [GitHubController::class, 'callbackGitHub']);
+});

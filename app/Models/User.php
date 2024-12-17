@@ -35,6 +35,7 @@ class User extends Authenticatable
         'birthdate',
         'password',
         'google_id',
+        'github_id',
         'signUpDate',
         'ban',
         'score',

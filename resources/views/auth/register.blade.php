@@ -59,6 +59,26 @@
                         <p>Já tem conta? <a href="{{ route('login') }}" class="text-decoration-none">Login</a></p>
                     </div>
 
+                    <div class="row">
+                <div class="col-12 col-md-6 mb-3">
+                    <a href="{{ route('google-auth') }}" 
+                    class="btn w-100 d-flex align-items-center justify-content-center" 
+                    style="background-color: rgb(244, 142, 97); color: #FFF; border: none; text-decoration: none; transition: background-color 0.3s;">
+                        <i class="fab fa-google me-2"></i>
+                        Login with Google
+                    </a>
+                </div>
+
+                <div class="col-12 col-md-6 mb-3">
+                    <a href="{{ route('github-auth') }}" class="text-decoration-none text-white">
+                    <button type="button" class="btn w-100" style="background-color: #333; color: #FFF;">
+                        <i class="fab fa-github me-2"></i>
+                        Login with GitHub
+                    </button>
+                    </a>
+                </div>
+            </div>
+
                     @if (session('success'))
                         <p class="text-success small mt-2">
                             {{ session('success') }}
