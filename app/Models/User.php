@@ -34,6 +34,7 @@ class User extends Authenticatable
         'bio',
         'birthdate',
         'password',
+        'google_id',
         'signUpDate',
         'ban',
         'score',

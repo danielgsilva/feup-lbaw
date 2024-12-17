@@ -12,6 +12,7 @@ use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\GoogleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -127,4 +128,10 @@ Route::controller(CommentController::class)->group(function () {
 Route::post('/questions/{id}/vote', [QuestionController::class, 'vote'])->name('questions.vote');
 
 Route::post('/answers/{id}/vote', [AnswerController::class, 'vote'])->name('answers.vote');
+
+Route::controller(GoogleController::class)->group(function () {
+    Route::get('auth/google', 'redirect')->name('google-auth');
+    Route::get('auth/google/call-back', 'callbackGoogle')->name('google-call-back');
+});
+
 
