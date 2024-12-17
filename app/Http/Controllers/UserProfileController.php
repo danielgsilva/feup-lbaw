@@ -128,41 +128,55 @@ public function updateProfile(Request $request, string $username = null): Redire
 }
 
 
-    public function deleteUser(string $username): RedirectResponse
-    {
-        $authuser = Auth::user();
+public function deleteUser(string $username): RedirectResponse
+{
+    $authuser = Auth::user();
 
-        if (!$authuser || !$authuser->admin ) {
-            return redirect()->route('home')->withErrors('User not found.');
-        }
 
-        $user = User::where('username', $username)->first();
+    if (!$authuser) {
+        return redirect()->route('home')->withErrors('User not found.');
+    }
 
-        if (!$user) {
-            return redirect()->route('home')->withErrors('User not found.');
-        }
+    
+    if ($authuser->username !== $username && !$authuser->admin) {
+        return redirect()->route('home')->withErrors('You do not have permission to delete this account.');
+    }
 
-        if ($authuser->id === $user->id) {
-            return redirect()->route('home')->withErrors('You cannot delete yourself.');
-        }
+    
+    $user = User::where('username', $username)->first();
 
-        $anonymous = User::firstorCreate(
-            ['username' => 'anonymous',],
+    if (!$user) {
+        return redirect()->route('home')->withErrors('User not found.');
+    }
+
+    
+    if ($authuser->id === $user->id) {
+        
+        $anonymous = User::firstOrCreate(
+            ['username' => 'anonymous'],
             [
-            'name' => 'Anonymous',
-            'email' => 'anonymous',
-            'bio' => 'This user has been deleted.',
-            'score' => 0,
-            'password' => bcrypt('anonymous'),
-        ]);
+                'name' => 'Anonymous',
+                'email' => 'anonymous@example.com',
+                'bio' => 'This user has been deleted.',
+                'score' => 0,
+                'password' => bcrypt('anonymous'),
+            ]
+        );
 
+        
         $user->questions()->update(['id_user' => $anonymous->id]);
         $user->answers()->update(['id_user' => $anonymous->id]);
 
+        
         $user->delete();
 
-        return redirect()->route('home')->with('success', 'User deleted successfully.');
+        return redirect()->route('home')->with('success', 'Your account has been deleted successfully.');
     }
+
+    
+    return redirect()->route('home')->withErrors('You cannot delete this user.');
+}
+
 
     public function toggleBan(string $username): RedirectResponse
     {

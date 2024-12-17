@@ -73,7 +73,7 @@
     </div>
 
     <!-- Question Actions -->
-    @if (Auth::check() && Auth::id() === $question->id_user)
+    @if (Auth::check() && Auth::id() === $question->id_user || Auth::user()->admin)
         <div class="mb-4 d-flex gap-2">
             <a href="{{ route('questions.edit', $question->id) }}" class="btn btn-primary">Edit Question</a>
             <form action="{{ route('questions.destroy', $question->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this question?');">
@@ -225,7 +225,7 @@
 
                     </div>
                 </div>
-                @if (Auth::check() && Auth::id() === $answer->id_user)
+                @if (Auth::check() && Auth::id() === $answer->id_user || Auth::user()->admin)
                     <div class="card-footer d-flex gap-2">
                         <a href="{{ route('answers.edit', $answer->id) }}" class="btn btn-primary btn-sm">Edit</a>
                         <form action="{{ route('answers.destroy', $answer->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this answer?');">

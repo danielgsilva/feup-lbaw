@@ -14,11 +14,11 @@ class QuestionPolicy
     }
     public function update(User $user, Question $question): bool
     {
-        return Auth::check() && $user->id === $question->id_user;
+        return Auth::check() && $user->id === $question->id_user || $user->admin;
     }
 
     public function delete(User $user, Question $question): bool
     {
-        return Auth::check() && $user->id === $question->id_user;
+        return Auth::check() && $user->id === $question->id_user || $user->admin;
     }
 }
