@@ -15,13 +15,16 @@
         </div>
         
         <div data-mdb-input-init class="form-outline mb-4">
-        <label for="password" class="form-label">Password</label>
-        <input id="password" class="form-control" type="password" name="password" required>
-        @if ($errors->has('password'))
-            <span class="error --bs-danger">
-                {{ $errors->first('password') }}
-            </span>
-        @endif
+            <label for="password" class="form-label"> Password</label>
+            <input id="password" class="form-control" type="password" name="password" required>
+            @if ($errors->has('password'))
+                <span class="error --bs-danger">
+                    {{ $errors->first('password') }}
+                </span>
+            @endif
+            <div class="text-end">
+                <a href="{{ route('password.request') }}">Forgot Password</a>
+            </div>
         </div>
         
         <div class="row mb-4">
