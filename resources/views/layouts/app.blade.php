@@ -9,7 +9,6 @@
             <section id="content">
                 @yield('content')
             </section>
-            @include('partials.notificationToast')
         </main>
         @include('layouts.footer')
     </body>
