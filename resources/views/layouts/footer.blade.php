@@ -8,7 +8,7 @@
         <!-- Your main content here -->
     </div>
     <footer class="pt-5 pb-3 mt-auto">
-        <nav class="row container m-auto">
+        <nav class="row container m-auto text-center">
             <div class="col-6 col-md">
                 <h5>AskIT</h5>
                 <ul class="list-unstyled text-small"></ul>
