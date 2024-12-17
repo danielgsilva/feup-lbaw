@@ -1,32 +1,37 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="page-margin d-flex flex-column justify-content-center">
-    <section class="password-recovery container-sm card p-5 mb-5">
-        <h2 class="mb-4">Password Recovery</h2>
-        <form method="POST" class="text-start" action="{{ route('password.email') }}">
-            {{ csrf_field() }}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 100px); margin-top: 50px; margin-bottom: 50px;">
+    <div class="row w-100">
+        <div class="col-md-6 mx-auto">
+            <div class="p-5 border rounded bg-light shadow-sm">
+                <h2 class="text-center mb-4">Password Recovery</h2>
 
-            <div>
-                <label for="email" class="form-label">E-mail</label>
-                <input id="email" type="email" name="email" value="{{ old('email') }}" class="form-control" placeholder="Email" data-error="That email address is invalid" required autofocus>
-                @if ($errors->has('email'))
-                    <span class="error">
-                    {{ $errors->first('email') }}
-                    </span>
+                @if (session('status'))
+                    <p class="alert alert-success text-center">
+                        {{ session('status') }}
+                    </p>
                 @endif
+
+                <form method="POST" action="{{ route('password.email') }}">
+                    {{ csrf_field() }}
+
+                    <div class="form-group mb-3">
+                        <label for="email" class="form-label">E-mail</label>
+                        <input id="email" type="email" name="email" value="{{ old('email') }}" class="form-control" placeholder="Email" required autofocus>
+                        @if ($errors->has('email'))
+                            <span class="text-danger small">
+                                {{ $errors->first('email') }}
+                            </span>
+                        @endif
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        Send Email
+                    </button>
+                </form>
             </div>
-
-            @if (session('status'))
-            <p class="success mt-2">
-                {{ session('status') }}
-            </p>
-            @endif
-
-            <button type="submit"  class="btn btn-primary mt-4">
-                Send Email
-            </button>
-        </form>
-    </section>
+        </div>
+    </div>
 </div>
 @endsection

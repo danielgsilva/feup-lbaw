@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 
 use App\Models\User;
+use App\Models\Image;
 
 class UserProfileController extends Controller
 {
@@ -94,14 +95,38 @@ public function updateProfile(Request $request, string $username = null): Redire
         'name' => 'required|string|max:255',
         'username' => 'required|string|max:255|unique:users,username,' . $user->id,
         'bio' => 'nullable|string|max:1000',
+        'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
     ]);
 
-    // Update user information
+    // Check if a new profile image is uploaded
+    if ($request->hasFile('profile_image')) {
+        // Store the new image
+        $imagePath = $request->file('profile_image')->store('profile_images', 'public');
+
+        // Update the image path in the Image table
+        $image = Image::where('id_user', $user->id)->first();
+
+        if ($image) {
+            // If the user already has an image, update it
+            $image->update([
+                'image_path' => $imagePath,
+            ]);
+        } else {
+            // If the user doesn't have an image, create a new one
+            Image::create([
+                'image_path' => $imagePath,
+                'id_user' => $user->id,
+            ]);
+        }
+    }
+
+    // Update user information excluding the profile_image
     $user->update($validatedData);
 
     return redirect()->route('profile.show', ['username' => $user->username])
         ->with('success', 'Profile updated successfully!');
 }
+
 
     public function deleteUser(string $username): RedirectResponse
     {
