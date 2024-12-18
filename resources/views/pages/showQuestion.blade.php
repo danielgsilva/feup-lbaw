@@ -80,7 +80,7 @@
 
     <!-- Question Actions -->
     @if ((Auth::check() && Auth::id() === $question->id_user) || (Auth::check() && Auth::user()->admin))
-        <div class="mb-4 d-flex gap-2">
+        <div class="d-flex mb-4 gap-2">
             <a href="{{ route('questions.edit', $question->id) }}" class="btn btn-primary">Edit Question</a>
             <form action="{{ route('questions.destroy', $question->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this question?');">
                 @csrf
@@ -103,6 +103,7 @@
 
     <!-- Add Answer Button and Form -->
     <button id="toggle-answer-form" class="btn btn-primary mb-3">Add Your Answer</button>
+    <button id="toggle-comment-form" class="btn btn-secondary mb-3">Add Your Comment</button>
     <div id="answer-form" style="display: none;" class="mb-4">
         <form action="{{ route('answers.store') }}" method="POST">
             @csrf
@@ -116,7 +117,6 @@
     </div>
 
     <!-- Add Comment Button and Form -->
-    <button id="toggle-comment-form" class="btn btn-secondary mb-3">Add Your Comment</button>
     <div id="comment-form" style="display: none;" class="mb-4">
         <form action="{{ route('comments.store') }}" method="POST">
             @csrf
