@@ -27,6 +27,9 @@
                     Anonymous on {{ $question->date }}
                 @endif
             </div>
+            @if (Auth::check() && Auth::id() !== $question->id_user)
+                 <a href="{{ route('report.create', ['type' => 'question', 'id' => $question->id]) }}" class="btn btn-danger btn-sm">Report Question</a>
+             @endif
             <div>
             <button id="like-button" class="btn btn-outline-success btn-sm me-2 
                 @if($userVote == 1) bg-success text-white @endif" onclick="voteq({{ $question->id }}, 1)">
@@ -97,6 +100,7 @@
             </form>
         </div>
     @endif
+
 
     <!-- Error Messages -->
     @if ($errors->any())
@@ -182,6 +186,9 @@
                         on {{ $answer->date }}
                         <a href="{{ route('answers.comments', $answer->id)}}" class="btn btn-outline-secondary btn-sm ms-2">Comments: {{ $answer->comments->count() }}</a>
                     </div>
+                    @if (Auth::check() && Auth::id() !== $question->id_user)
+                        <a href="{{ route('report.create', ['type' => 'answer', 'id' => $answer->id]) }}" class="btn btn-danger btn-sm">Report Answer</a>
+                    @endif
                     <div>
                     <button 
                         id="like-answer-{{ $answer->id }}" 
@@ -248,7 +255,9 @@
 
                     </div>
                 </div>
-                @if ((Auth::check() && Auth::id() === $answer->id_user) || (Auth::check() && Auth::user()->admin))
+            </div>
+        <div class="mb-4">
+            @if ((Auth::check() && Auth::id() === $answer->id_user) || (Auth::check() && Auth::user()->admin))
                     <div class="card-footer d-flex gap-2">
                         <a href="{{ route('answers.edit', $answer->id) }}" class="btn btn-primary btn-sm">Edit</a>
                         <form action="{{ route('answers.destroy', $answer->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this answer?');">
@@ -258,7 +267,7 @@
                         </form>
                     </div>
                 @endif
-            </div>
+        </div>
         @endforeach
     @endif
 
