@@ -22,7 +22,14 @@
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">{{ Auth::user()->name }}</button>
                     <ul class="dropdown-menu">
                         <li><a href="{{ url('/profile/' . Auth::user()->username) }}" class="dropdown-item">Profile</a></li>
-                        <li><a href="{{ url(path: '/notifications') }}" class="dropdown-item">Notifications</a></li>
+                        <li>
+                            <a href="{{ route('notifications.index') }}" class="dropdown-item">
+                                Notifications
+                                @if(isset($unreadNotifications) && $unreadNotifications->count() > 0)
+                                    <span class="badge bg-danger ms-2">{{ $unreadNotifications->count() }}</span>
+                                @endif
+                            </a>
+                        </li>
                         <!--
                         @if (Auth::user()->admin)
                         <li>
