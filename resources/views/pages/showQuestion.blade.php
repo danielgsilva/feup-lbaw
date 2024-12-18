@@ -48,7 +48,15 @@
                     },
                     body: JSON.stringify({ vote: voteValue })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.status === 401) {
+                        // Redirecionar para a página de login
+                        return response.json().then(data => {
+                            window.location.href = data.redirect;
+                        });
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     // Update the vote count
                     document.querySelector('#vote').textContent = `Votes: ${data.votes}`;
@@ -199,7 +207,15 @@
                             },
                             body: JSON.stringify({ vote: voteValue })
                         })
-                        .then(response => response.json())
+                        .then(response => {
+                            if (response.status === 401) {
+                                // Redirecionar para a página de login
+                                return response.json().then(data => {
+                                    window.location.href = data.redirect;
+                                });
+                            }
+                            return response.json();
+                        })
                         .then(data => {
                             // Update the vote count
                             const voteBadge = document.querySelector(`#answer-${answerId} .badge`);
@@ -226,10 +242,6 @@
                                 document.getElementById(`like-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, 1)`);
                                 document.getElementById(`dislike-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, -1)`);
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Something went wrong. Please try again.');
                         });
                     }
                 </script>

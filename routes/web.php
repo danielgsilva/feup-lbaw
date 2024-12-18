@@ -15,6 +15,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\GitHubController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PageController;
 
 
 /*
@@ -30,6 +31,14 @@ use App\Http\Controllers\NotificationController;
 
 // Home
 Route::redirect('/', '/home');
+
+
+// About us
+Route::get('/about', [PageController::class, 'about']); 
+
+// Main Features
+Route::get('/features', [PageController::class, 'features']);
+
 
 // Cards
 Route::controller(HomeController::class)->group(function () {
