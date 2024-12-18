@@ -19,7 +19,7 @@
             
             <p class="mb-1"><strong>Bio:</strong> 
                 @if ($user->ban)
-                    <span class="badge badge-danger">This user is banned</span>
+                    <stong>This user is banned</strong>
                 @else
                     {{ $user->bio ?? 'No bio available' }}
                 @endif
@@ -39,27 +39,26 @@
     </div>
 @endif
 
-@if (Auth::check() && Auth::user()->admin && $user->username !== 'anonymous' && !$isOwnProfile)
-    <div class="mt-4 text-center">
-        <form action="{{ route('profile.delete', $user->username) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user? This action is irreversible.');" class="d-inline">
+<div class="mt-4 d-flex justify-content-center">
+    @if ((Auth::check() && Auth::user()->admin && $user->username !== 'anonymous') || ($isOwnProfile && !$user->ban && Auth::check() && $user->username !== 'anonymous')) 
+        <form action="{{ route('profile.delete', $user->username) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user? This action is irreversible.');" class="d-inline me-2">
             @csrf
             @method('DELETE')
             <button type="submit" class="btn btn-danger">Delete User</button>
         </form>
-    </div>
-@endif
+    @endif
 
-@if (Auth::check() && Auth::user()->admin && !$isOwnProfile && $user->username !== 'anonymous')
-    <div class="mt-3 text-center">
+    @if (Auth::check() && Auth::user()->admin && !$isOwnProfile && $user->username !== 'anonymous')
         <form method="POST" action="{{ route('profile.toggleBan', $user->username) }}" class="d-inline">
             @csrf
             @method('PATCH')
-            <button class="btn {{ $user->ban ? 'btn-danger' : 'btn-success' }}">
+            <button class="btn {{ $user->ban ? 'btn-success' : 'btn-danger' }}">
                 {{ $user->ban ? 'Unban User' : 'Ban User' }}
             </button>
         </form>
-    </div>
-@endif
+    @endif
+</div>
+
 
 
 

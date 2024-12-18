@@ -97,13 +97,13 @@ class QuestionController extends Controller
         return redirect()->route('questions.show', $question->id)->with('success', 'Question updated successfully!');
     }
 
-    public function destroy($id)
-    {
-        $question = Question::findOrFail($id);
-        $this->authorize('delete', $question);
-        $question->delete();
-        return redirect()->route('home')->with('success', 'Question deleted successfully!');
-    }
+        public function destroy($id)
+        {
+            $question = Question::findOrFail($id);
+            $this->authorize('delete', $question);
+            $question->delete();
+            return redirect()->route('home')->with('success', 'Question deleted successfully!');
+        }
 
     public function search(Request $request)
     {

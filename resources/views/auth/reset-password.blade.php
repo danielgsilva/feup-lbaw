@@ -1,49 +1,57 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="page-margin d-flex flex-column justify-content-center">
-  <section class="password-recovery container-sm card p-5">
-    <h2 class="mb-4">Password Recovery</h2>
-    <form method="POST" action="{{ route('password.update') }}" class="text-start" data-toggle="validator">
-        {{ csrf_field() }}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 100px); margin-top: 50px; margin-bottom: 50px;">
+    <div class="row w-100">
+        <div class="col-md-6 mx-auto">
+            <div class="p-5 border rounded bg-light shadow-sm">
+                <h2 class="text-center mb-4">Password Recovery</h2>
 
-        <input type="hidden" name="token" value="{{$token}}">
+                @if (session('status'))
+                    <p class="alert alert-success text-center">
+                        {{ session('status') }}
+                    </p>
+                @endif
 
-        <div class="mb-4">
-          <label for="email" class="form-label">E-Mail*</label>
-          <input id="email" class="form-control" placeholder="Email" type="email" name="email" value="{{ old('email') }}" data-error="That email address is invalid" required>
-          @if ($errors->has('email'))
-            <span class="error">
-                {{ $errors->first('email') }}
-            </span>
-          @endif
+                <form method="POST" action="{{ route('password.update') }}">
+                    {{ csrf_field() }}
+
+                    <input type="hidden" name="token" value="{{ $token }}">
+
+                  
+                    <div class="form-group mb-3">
+                        <label for="email" class="form-label">E-Mail*</label>
+                        <input id="email" type="email" name="email" value="{{ old('email') }}" class="form-control" placeholder="Email" required>
+                        @if ($errors->has('email'))
+                            <span class="text-danger small">
+                                {{ $errors->first('email') }}
+                            </span>
+                        @endif
+                    </div>
+
+                  
+                    <div class="form-group mb-3">
+                        <label for="password" class="form-label">Password*</label>
+                        <input id="password" type="password" name="password" class="form-control" placeholder="Password" required>
+                        @if ($errors->has('password'))
+                            <span class="text-danger small">
+                                {{ $errors->first('password') }}
+                            </span>
+                        @endif
+                    </div>
+
+                 
+                    <div class="form-group mb-3">
+                        <label for="password_confirmation" class="form-label">Confirm Password*</label>
+                        <input id="password_confirmation" type="password" name="password_confirmation" class="form-control" placeholder="Confirm Password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-3">
+                        Save New Password
+                    </button>
+                </form>
+            </div>
         </div>
-        
-        <div class="mb-4">
-          <label for="password" class="form-label">Password*</label>
-          <input id="password" class="form-control" type="password" name="password" data-minlength="8" placeholder="Password" required>
-          @if ($errors->has('password'))
-            <span class="error">
-                {{ $errors->first('password') }}
-            </span>
-          @endif
-        </div>
-        
-        <div>
-          <label for="password_confirmation" class="form-label">Confirm Password*</label>
-          <input id="password_confirmation" class="form-control" type="password"  data-match="#password" name="password_confirmation" data-match-error="Whoops, these don't match" placeholder="Confirm Password" required>
-        </div>
-
-        @if (session('status'))
-          <p class="success mt-2">
-              {{ session('status') }}
-          </p>
-        @endif
-
-        <button type="submit" class="btn btn-primary btn-block mt-4">
-          Save New Password
-        </button>
-    </form>
-  </section> 
+    </div>
 </div>
 @endsection

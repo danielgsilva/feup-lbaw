@@ -23,8 +23,8 @@
                 </div>
             @endforeach
         </div>
-        <div class="pagination">
-            {{ $questions->appends(['query' => $search])->links() }}
+        <div class="d-flex justify-content-center mt-4">
+            {{ $questions->appends(['query' => $search])->links('pagination::bootstrap-4') }}
         </div>
     @endif
 </div>

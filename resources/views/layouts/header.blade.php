@@ -20,7 +20,7 @@
                 @if (Auth::check())
                 <div class="dropdown mt-1">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">{{ Auth::user()->name }}</button>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-end">
                         <li><a href="{{ url('/profile/' . Auth::user()->username) }}" class="dropdown-item">Profile</a></li>
                         <li>
                             <a href="{{ route('notifications.index') }}" class="dropdown-item">
