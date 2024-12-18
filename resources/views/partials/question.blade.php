@@ -2,7 +2,7 @@
     <div class="card-body">
         <h2><a href="{{ route('questions.show', $question->id) }}" class="text-decoration-none text-dark">{{ $question->title }}</a>
         @if ($question->edited)
-            <span class="badge badge-warning"><i>(Edited)</i></span>
+            <span class="badge bg-light text-muted ms-2"><i>(Edited)</i></span>
         @endif
         </h2>
         

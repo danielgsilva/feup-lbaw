@@ -36,7 +36,7 @@
                 @if($userVote == -1) bg-danger text-white @endif" onclick="voteq({{ $question->id }}, -1)">
                 <i class="bi bi-hand-thumbs-down"></i> Dislike
             </button>
-            <span class="badge bg-secondary ms-2">Votes: {{ $question->votes }}</span>
+            <span class="badge bg-secondary ms-2" id="vote">Votes: {{ $question->votes }}</span>
 
             <script>
             function voteq(questionId, voteValue) {
@@ -51,7 +51,7 @@
                 .then(response => response.json())
                 .then(data => {
                     // Update the vote count
-                    document.querySelector('.badge').textContent = `Votes: ${data.votes}`;
+                    document.querySelector('#vote').textContent = `Votes: ${data.votes}`;
                     
                     // Highlight buttons based on user vote
                     if (data.userVote === 1) {

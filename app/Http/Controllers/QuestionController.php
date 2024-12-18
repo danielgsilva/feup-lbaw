@@ -163,7 +163,7 @@ class QuestionController extends Controller
         // Update the total vote count
         $question->votes = DB::table('question_vote')
             ->where('id_question', $question->id)
-            ->sum('value');
+            ->sum('value') + $question->votes;
 
         $question->save();
 
