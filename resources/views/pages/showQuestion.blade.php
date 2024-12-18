@@ -57,12 +57,18 @@
                     if (data.userVote === 1) {
                         document.getElementById('like-button').classList.add('bg-success', 'text-white');
                         document.getElementById('dislike-button').classList.remove('bg-danger', 'text-white');
+                        document.getElementById('like-button').setAttribute('onclick', `voteq(${questionId}, 0)`);
+                        document.getElementById('dislike-button').setAttribute('onclick', `voteq(${questionId}, -1)`);
                     } else if (data.userVote === -1) {
                         document.getElementById('like-button').classList.remove('bg-success', 'text-white');
                         document.getElementById('dislike-button').classList.add('bg-danger', 'text-white');
+                        document.getElementById('like-button').setAttribute('onclick', `voteq(${questionId}, 1)`);
+                        document.getElementById('dislike-button').setAttribute('onclick', `voteq(${questionId}, 0)`);
                     } else {
                         document.getElementById('like-button').classList.remove('bg-success', 'text-white');
                         document.getElementById('dislike-button').classList.remove('bg-danger', 'text-white');
+                        document.getElementById('like-button').setAttribute('onclick', `voteq(${questionId}, 1)`);
+                        document.getElementById('dislike-button').setAttribute('onclick', `voteq(${questionId}, -1)`);
                     }
                 });
             }
@@ -171,15 +177,13 @@
                     <div>
                     <button 
                         id="like-answer-{{ $answer->id }}" 
-                        class="btn btn-outline-success btn-sm me-2 
-                            @if($answer->userVote === 1) bg-success text-white @endif"
+                        class="btn btn-outline-success btn-sm me-2"
                         onclick="votea({{ $answer->id }}, 1)">
                         <i class="bi bi-hand-thumbs-up"></i> Like
                     </button>
                     <button 
                         id="dislike-answer-{{ $answer->id }}" 
-                        class="btn btn-outline-danger btn-sm 
-                            @if($answer->userVote === -1) bg-danger text-white @endif"
+                        class="btn btn-outline-danger btn-sm "
                         onclick="votea({{ $answer->id }}, -1)">
                         <i class="bi bi-hand-thumbs-down"></i> Dislike
                     </button>
@@ -206,14 +210,21 @@
                             const dislikeButton = document.getElementById(`dislike-answer-${answerId}`);
 
                             if (data.userVote === 1) {
-                                likeButton.classList.add('bg-success', 'text-white');
-                                dislikeButton.classList.remove('bg-danger', 'text-white');
+                                document.getElementById(`like-answer-${answerId}`).classList.add('bg-success', 'text-white');
+                                document.getElementById(`dislike-answer-${answerId}`).classList.remove('bg-danger', 'text-white');
+                                document.getElementById(`like-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, 0)`);
+                                document.getElementById(`dislike-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, -1)`);
+
                             } else if (data.userVote === -1) {
-                                likeButton.classList.remove('bg-success', 'text-white');
-                                dislikeButton.classList.add('bg-danger', 'text-white');
+                                document.getElementById(`like-answer-${answerId}`).classList.remove('bg-success', 'text-white');
+                                document.getElementById(`dislike-answer-${answerId}`).classList.add('bg-danger', 'text-white');
+                                document.getElementById(`like-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, 1)`);
+                                document.getElementById(`dislike-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, 0)`);
                             } else {
-                                likeButton.classList.remove('bg-success', 'text-white');
-                                dislikeButton.classList.remove('bg-danger', 'text-white');
+                                document.getElementById(`like-answer-${answerId}`).classList.remove('bg-success', 'text-white');
+                                document.getElementById(`dislike-answer-${answerId}`).classList.remove('bg-danger', 'text-white');
+                                document.getElementById(`like-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, 1)`);
+                                document.getElementById(`dislike-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, -1)`);
                             }
                         })
                         .catch(error => {

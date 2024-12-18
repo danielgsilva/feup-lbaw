@@ -133,7 +133,13 @@ class AnswerController extends Controller
                 DB::table('answer_vote')
                     ->where('id_user', $user->id)
                     ->where('id_answer', $answer->id)
-                    ->update(['value' => $request->vote]);
+                    ->delete();
+                
+                DB::table('answer_vote')->insert([
+                    'id_user' => $user->id,
+                    'id_answer' => $answer->id,
+                    'value' => $request->vote,
+                ]);
             }
         } else {
             if ($request->vote != 0) {
