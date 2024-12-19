@@ -6,6 +6,10 @@ body {
     min-height: 100vh;
 }
 
+.error {
+  color: var(--bs-red);
+}
+
 /* Auto Complete */
 .autocomplete {
   position: relative;

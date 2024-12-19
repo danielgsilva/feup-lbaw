@@ -27,8 +27,7 @@
 <script type="text/javascript" src={{ url('js/app.js') }} defer></script>
 <script  src={{ asset('js/tags.js') }} type="module"></script>
 <script  src={{ asset('js/autocomplete.js') }} defer></script>
+<script  src={{ asset('js/imagePreview.js') }} defer></script>
 
 @yield('scripts')
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
