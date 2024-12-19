@@ -108,13 +108,13 @@ class QuestionController extends Controller
         return redirect()->route('questions.show', $question->id)->with('success', 'Question updated successfully!');
     }
 
-    public function destroy($id)
-    {
-        $question = Question::findOrFail($id);
-        $this->authorize('delete', $question);
-        $question->delete();
-        return redirect()->route('home')->with('success', 'Question deleted successfully!');
-    }
+        public function destroy($id)
+        {
+            $question = Question::findOrFail($id);
+            $this->authorize('delete', $question);
+            $question->delete();
+            return redirect()->route('home')->with('success', 'Question deleted successfully!');
+        }
 
     public function search(Request $request)
     {
@@ -132,7 +132,10 @@ class QuestionController extends Controller
 
     public function vote(Request $request, $id)
     {
-        // Ensure the value is valid (either upvote or downvote)
+        if (!Auth::check()) {
+            return response()->json(['redirect' => route('login')], 401);
+        }
+        
         $request->validate([
             'vote' => 'required|in:1,-1,0', // 1 for upvote, -1 for downvote, 0 to remove vote
         ]);
@@ -158,7 +161,13 @@ class QuestionController extends Controller
                 DB::table('question_vote')
                     ->where('id_user', $user->id)
                     ->where('id_question', $question->id)
-                    ->update(['value' => $request->vote]);
+                    ->delete();
+                
+                DB::table('question_vote')->insert([
+                    'id_user' => $user->id,
+                    'id_question' => $question->id,
+                    'value' => $request->vote,
+                ]);
             }
         } else {
             if ($request->vote != 0) {
@@ -171,12 +180,10 @@ class QuestionController extends Controller
             }
         }
 
-        // Update the total vote count
-        $question->votes = DB::table('question_vote')
-            ->where('id_question', $question->id)
-            ->sum('value');
-
-        $question->save();
+        // Retrieve the updated vote count from the database
+        $question->votes = DB::table('question')
+            ->where('id', $question->id)
+            ->value('votes');
 
         // Return JSON response with updated vote count and user's vote
         $userVote = DB::table('question_vote')

@@ -16,17 +16,17 @@ class AnswerPolicy
 
     public function update(User $user, Answer $answer): bool
     {
-        return Auth::check() && $user->id === $answer->id_user;
+        return Auth::check() && $user->id === $answer->id_user || $user->admin;
     }
 
     public function delete(User $user, Answer $answer): bool
     {
-        return Auth::check() && $user->id === $answer->id_user;
+        return Auth::check() && $user->id === $answer->id_user || $user->admin;
     }
 
     public function edit(User $user, Answer $answer): bool
     {
-        return Auth::check() && $user->id === $answer->id_user;
+        return Auth::check() && $user->id === $answer->id_user || $user->admin;
     }
 
     public function accept(User $user, Answer $answer): bool

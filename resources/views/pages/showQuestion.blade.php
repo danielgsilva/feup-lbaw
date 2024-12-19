@@ -27,6 +27,9 @@
                     Anonymous on {{ $question->date }}
                 @endif
             </div>
+            @if (Auth::check() && Auth::id() !== $question->id_user)
+                 <a href="{{ route('report.create', ['type' => 'question', 'id' => $question->id]) }}" class="btn btn-danger btn-sm">Report Question</a>
+             @endif
             <div>
             <button id="like-button" class="btn btn-outline-success btn-sm me-2 
                 @if($userVote == 1) bg-success text-white @endif" onclick="voteq({{ $question->id }}, 1)">
@@ -36,7 +39,7 @@
                 @if($userVote == -1) bg-danger text-white @endif" onclick="voteq({{ $question->id }}, -1)">
                 <i class="bi bi-hand-thumbs-down"></i> Dislike
             </button>
-            <span class="badge bg-secondary ms-2">Votes: {{ $question->votes }}</span>
+            <span class="badge bg-secondary ms-2" id="vote">Votes: {{ $question->votes }}</span>
 
             <script>
             function voteq(questionId, voteValue) {
@@ -48,21 +51,35 @@
                     },
                     body: JSON.stringify({ vote: voteValue })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.status === 401) {
+                        // Redirecionar para a página de login
+                        return response.json().then(data => {
+                            window.location.href = data.redirect;
+                        });
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     // Update the vote count
-                    document.querySelector('.badge').textContent = `Votes: ${data.votes}`;
+                    document.querySelector('#vote').textContent = `Votes: ${data.votes}`;
                     
                     // Highlight buttons based on user vote
                     if (data.userVote === 1) {
                         document.getElementById('like-button').classList.add('bg-success', 'text-white');
                         document.getElementById('dislike-button').classList.remove('bg-danger', 'text-white');
+                        document.getElementById('like-button').setAttribute('onclick', `voteq(${questionId}, 0)`);
+                        document.getElementById('dislike-button').setAttribute('onclick', `voteq(${questionId}, -1)`);
                     } else if (data.userVote === -1) {
                         document.getElementById('like-button').classList.remove('bg-success', 'text-white');
                         document.getElementById('dislike-button').classList.add('bg-danger', 'text-white');
+                        document.getElementById('like-button').setAttribute('onclick', `voteq(${questionId}, 1)`);
+                        document.getElementById('dislike-button').setAttribute('onclick', `voteq(${questionId}, 0)`);
                     } else {
                         document.getElementById('like-button').classList.remove('bg-success', 'text-white');
                         document.getElementById('dislike-button').classList.remove('bg-danger', 'text-white');
+                        document.getElementById('like-button').setAttribute('onclick', `voteq(${questionId}, 1)`);
+                        document.getElementById('dislike-button').setAttribute('onclick', `voteq(${questionId}, -1)`);
                     }
                 });
             }
@@ -73,8 +90,8 @@
     </div>
 
     <!-- Question Actions -->
-    @if (Auth::check() && Auth::id() === $question->id_user)
-        <div class="mb-4 d-flex gap-2">
+    @if ((Auth::check() && Auth::id() === $question->id_user) || (Auth::check() && Auth::user()->admin))
+        <div class="d-flex mb-4 gap-2">
             <a href="{{ route('questions.edit', $question->id) }}" class="btn btn-primary">Edit Question</a>
             <form action="{{ route('questions.destroy', $question->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this question?');">
                 @csrf
@@ -83,6 +100,7 @@
             </form>
         </div>
     @endif
+
 
     <!-- Error Messages -->
     @if ($errors->any())
@@ -97,6 +115,7 @@
 
     <!-- Add Answer Button and Form -->
     <button id="toggle-answer-form" class="btn btn-primary mb-3">Add Your Answer</button>
+    <button id="toggle-comment-form" class="btn btn-secondary mb-3">Add Your Comment</button>
     <div id="answer-form" style="display: none;" class="mb-4">
         <form action="{{ route('answers.store') }}" method="POST">
             @csrf
@@ -110,7 +129,6 @@
     </div>
 
     <!-- Add Comment Button and Form -->
-    <button id="toggle-comment-form" class="btn btn-secondary mb-3">Add Your Comment</button>
     <div id="comment-form" style="display: none;" class="mb-4">
         <form action="{{ route('comments.store') }}" method="POST">
             @csrf
@@ -168,18 +186,19 @@
                         on {{ $answer->date }}
                         <a href="{{ route('answers.comments', $answer->id)}}" class="btn btn-outline-secondary btn-sm ms-2">Comments: {{ $answer->comments->count() }}</a>
                     </div>
+                    @if (Auth::check() && Auth::id() !== $question->id_user)
+                        <a href="{{ route('report.create', ['type' => 'answer', 'id' => $answer->id]) }}" class="btn btn-danger btn-sm">Report Answer</a>
+                    @endif
                     <div>
                     <button 
                         id="like-answer-{{ $answer->id }}" 
-                        class="btn btn-outline-success btn-sm me-2 
-                            @if($answer->userVote === 1) bg-success text-white @endif"
+                        class="btn btn-outline-success btn-sm me-2"
                         onclick="votea({{ $answer->id }}, 1)">
                         <i class="bi bi-hand-thumbs-up"></i> Like
                     </button>
                     <button 
                         id="dislike-answer-{{ $answer->id }}" 
-                        class="btn btn-outline-danger btn-sm 
-                            @if($answer->userVote === -1) bg-danger text-white @endif"
+                        class="btn btn-outline-danger btn-sm "
                         onclick="votea({{ $answer->id }}, -1)">
                         <i class="bi bi-hand-thumbs-down"></i> Dislike
                     </button>
@@ -195,7 +214,15 @@
                             },
                             body: JSON.stringify({ vote: voteValue })
                         })
-                        .then(response => response.json())
+                        .then(response => {
+                            if (response.status === 401) {
+                                // Redirecionar para a página de login
+                                return response.json().then(data => {
+                                    window.location.href = data.redirect;
+                                });
+                            }
+                            return response.json();
+                        })
                         .then(data => {
                             // Update the vote count
                             const voteBadge = document.querySelector(`#answer-${answerId} .badge`);
@@ -206,26 +233,31 @@
                             const dislikeButton = document.getElementById(`dislike-answer-${answerId}`);
 
                             if (data.userVote === 1) {
-                                likeButton.classList.add('bg-success', 'text-white');
-                                dislikeButton.classList.remove('bg-danger', 'text-white');
+                                document.getElementById(`like-answer-${answerId}`).classList.add('bg-success', 'text-white');
+                                document.getElementById(`dislike-answer-${answerId}`).classList.remove('bg-danger', 'text-white');
+                                document.getElementById(`like-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, 0)`);
+                                document.getElementById(`dislike-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, -1)`);
+
                             } else if (data.userVote === -1) {
-                                likeButton.classList.remove('bg-success', 'text-white');
-                                dislikeButton.classList.add('bg-danger', 'text-white');
+                                document.getElementById(`like-answer-${answerId}`).classList.remove('bg-success', 'text-white');
+                                document.getElementById(`dislike-answer-${answerId}`).classList.add('bg-danger', 'text-white');
+                                document.getElementById(`like-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, 1)`);
+                                document.getElementById(`dislike-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, 0)`);
                             } else {
-                                likeButton.classList.remove('bg-success', 'text-white');
-                                dislikeButton.classList.remove('bg-danger', 'text-white');
+                                document.getElementById(`like-answer-${answerId}`).classList.remove('bg-success', 'text-white');
+                                document.getElementById(`dislike-answer-${answerId}`).classList.remove('bg-danger', 'text-white');
+                                document.getElementById(`like-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, 1)`);
+                                document.getElementById(`dislike-answer-${answerId}`).setAttribute('onclick', `votea(${answerId}, -1)`);
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Something went wrong. Please try again.');
                         });
                     }
                 </script>
 
                     </div>
                 </div>
-                @if (Auth::check() && Auth::id() === $answer->id_user)
+            </div>
+        <div class="mb-4">
+            @if ((Auth::check() && Auth::id() === $answer->id_user) || (Auth::check() && Auth::user()->admin))
                     <div class="card-footer d-flex gap-2">
                         <a href="{{ route('answers.edit', $answer->id) }}" class="btn btn-primary btn-sm">Edit</a>
                         <form action="{{ route('answers.destroy', $answer->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this answer?');">
@@ -235,7 +267,7 @@
                         </form>
                     </div>
                 @endif
-            </div>
+        </div>
         @endforeach
     @endif
 

@@ -36,6 +36,13 @@ class RegisterController extends Controller
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        $existingUser = User::where('username', $request->username)->first();
+
+        if ($existingUser) {
+            
+            return back()->withErrors(['username' => 'Este username já está em uso. Por favor, escolha outro.']);
+        }
+
         $user = User::create([
             'username' => $request->username,
             'name' => $request->name,

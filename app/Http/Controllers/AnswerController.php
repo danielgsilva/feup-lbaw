@@ -107,9 +107,13 @@ class AnswerController extends Controller
 
     public function vote(Request $request, $id)
     {
-        // Ensure the value is valid (either upvote or downvote)
+        if (!Auth::check()) {
+            return response()->json(['redirect' => route('login')], 401);
+        }
+
+        
         $request->validate([
-            'vote' => 'required|in:1,-1', // 1 for upvote, -1 for downvote
+            'vote' => 'required|in:1,-1,0', // 1 for upvote, -1 for downvote, 0 to remove vote
         ]);
     
         $answer = Answer::findOrFail($id);
@@ -133,7 +137,13 @@ class AnswerController extends Controller
                 DB::table('answer_vote')
                     ->where('id_user', $user->id)
                     ->where('id_answer', $answer->id)
-                    ->update(['value' => $request->vote]);
+                    ->delete();
+                
+                DB::table('answer_vote')->insert([
+                    'id_user' => $user->id,
+                    'id_answer' => $answer->id,
+                    'value' => $request->vote,
+                ]);
             }
         } else {
             if ($request->vote != 0) {
@@ -146,19 +156,17 @@ class AnswerController extends Controller
             }
         }
     
-        // Update the total vote count
-        $answer->votes = DB::table('answer_vote')
-            ->where('id_answer', $answer->id)
-            ->sum('value');
-
-        $answer->save();
-
+        // Retrieve the updated vote count from the database
+        $answer->votes = DB::table('answer')
+            ->where('id', $answer->id)
+            ->value('votes');
+    
         // Retrieve the user's current vote
         $userVote = DB::table('answer_vote')
             ->where('id_user', $user->id)
             ->where('id_answer', $answer->id)
             ->value('value') ?? 0;
-
+    
         // Return a JSON response with updated vote count and user's vote
         return response()->json([
             'votes' => $answer->votes,

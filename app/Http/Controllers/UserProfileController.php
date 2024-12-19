@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 
 use App\Models\Tag;
 use App\Models\User;
+use App\Models\Image;
 
 class UserProfileController extends Controller
 {
@@ -100,6 +101,7 @@ public function updateProfile(Request $request, string $username = null): Redire
         'bio' => 'nullable|string|max:1000',
         'tagList' => 'max:5',
         'tagList.*' => 'sometimes|distinct|max:100|string',
+        'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
     ]);
 
     $tags = $request->get('tagList');
@@ -110,48 +112,85 @@ public function updateProfile(Request $request, string $username = null): Redire
         }
     }
 
-    // Update user information
+    // Check if a new profile image is uploaded
+    if ($request->hasFile('profile_image')) {
+        // Store the new image
+        $imagePath = $request->file('profile_image')->store('profile_images', 'public');
+
+        // Update the image path in the Image table
+        $image = Image::where('id_user', $user->id)->first();
+
+        if ($image) {
+            // If the user already has an image, update it
+            $image->update([
+                'image_path' => $imagePath,
+            ]);
+        } else {
+            // If the user doesn't have an image, create a new one
+            Image::create([
+                'image_path' => $imagePath,
+                'id_user' => $user->id,
+            ]);
+        }
+    }
+
+    // Update user information excluding the profile_image
     $user->update($validatedData);
 
     return redirect()->route('profile.show', ['username' => $user->username])
         ->with('success', 'Profile updated successfully!');
 }
 
-    public function deleteUser(string $username): RedirectResponse
-    {
-        $authuser = Auth::user();
 
-        if (!$authuser || !$authuser->admin ) {
-            return redirect()->route('home')->withErrors('User not found.');
-        }
+public function deleteUser(string $username): RedirectResponse
+{
+    $authuser = Auth::user();
 
-        $user = User::where('username', $username)->first();
 
-        if (!$user) {
-            return redirect()->route('home')->withErrors('User not found.');
-        }
+    if (!$authuser) {
+        return redirect()->route('home')->withErrors('User not found.');
+    }
 
-        if ($authuser->id === $user->id) {
-            return redirect()->route('home')->withErrors('You cannot delete yourself.');
-        }
+    
+    if ($authuser->username !== $username && !$authuser->admin) {
+        return redirect()->route('home')->withErrors('You do not have permission to delete this account.');
+    }
 
-        $anonymous = User::firstorCreate(
-            ['username' => 'anonymous',],
+    
+    $user = User::where('username', $username)->first();
+
+    if (!$user) {
+        return redirect()->route('home')->withErrors('User not found.');
+    }
+
+    
+    if ($authuser->id === $user->id) {
+        
+        $anonymous = User::firstOrCreate(
+            ['username' => 'anonymous'],
             [
-            'name' => 'Anonymous',
-            'email' => 'anonymous',
-            'bio' => 'This user has been deleted.',
-            'score' => 0,
-            'password' => bcrypt('anonymous'),
-        ]);
+                'name' => 'Anonymous',
+                'email' => 'anonymous@example.com',
+                'bio' => 'This user has been deleted.',
+                'score' => 0,
+                'password' => bcrypt('anonymous'),
+            ]
+        );
 
+        
         $user->questions()->update(['id_user' => $anonymous->id]);
         $user->answers()->update(['id_user' => $anonymous->id]);
 
+        
         $user->delete();
 
-        return redirect()->route('home')->with('success', 'User deleted successfully.');
+        return redirect()->route('home')->with('success', 'Your account has been deleted successfully.');
     }
+
+    
+    return redirect()->route('home')->withErrors('You cannot delete this user.');
+}
+
 
     public function toggleBan(string $username): RedirectResponse
     {

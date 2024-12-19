@@ -12,6 +12,13 @@ use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\GitHubController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\ReportController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +33,14 @@ use App\Http\Controllers\CommentController;
 
 // Home
 Route::redirect('/', '/home');
+
+
+// About us
+Route::get('/about', [PageController::class, 'about']); 
+
+// Main Features
+Route::get('/features', [PageController::class, 'features']);
+
 
 // Cards
 Route::controller(HomeController::class)->group(function () {
@@ -81,6 +96,8 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile/{username}', [UserProfileController::class, 'updateProfile'])
         ->name('profile.updateAny');
     Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 });
 
 // Authentication
@@ -95,6 +112,7 @@ Route::controller(RegisterController::class)->group(function () {
     Route::post('/register', 'register');
 });
 
+// Password Reset
 Route::controller(PasswordResetController::class)->group(function () {
     Route::get('/forgot-password', 'show')->name('password.request');
     Route::post('/forgot-password', 'requestRecovery')->name('password.email');
@@ -116,6 +134,7 @@ Route::controller(UserProfileController::class)->group(function () {
         ->name('profile.updateAny');
 });
 
+// Comments
 Route::controller(CommentController::class)->group(function () {
     Route::post('/comments', 'store')->name('comments.store');
     Route::get('/comments/{id}/edit', 'edit')->name('comments.edit');
@@ -128,3 +147,22 @@ Route::post('/questions/{id}/vote', [QuestionController::class, 'vote'])->name('
 
 Route::post('/answers/{id}/vote', [AnswerController::class, 'vote'])->name('answers.vote');
 
+// Google log in
+Route::controller(GoogleController::class)->group(function () {
+    Route::get('auth/google', 'redirect')->name('google-auth');
+    Route::get('auth/google/call-back', 'callbackGoogle')->name('google-call-back');
+});
+
+// GitHub log in 
+Route::controller(GitHubController::class)->group(function () {
+    Route::get('auth/github', [GitHubController::class, 'redirect'])->name('github-auth');
+    Route::get('auth/github/call-back', [GitHubController::class, 'callbackGitHub']);
+});
+
+// Reports
+Route::controller(ReportController::class)->group(function () {
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::put('/reports/{report}/resolve', [ReportController::class, 'resolve'])->name('reports.resolve');
+    Route::get('/report/{type}/{id}', [ReportController::class, 'create'])->name('report.create');
+    Route::post('/report', [ReportController::class, 'store'])->name('report.store');
+});

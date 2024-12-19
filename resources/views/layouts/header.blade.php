@@ -20,9 +20,16 @@
                 @if (Auth::check())
                 <div class="dropdown mt-1">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">{{ Auth::user()->name }}</button>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-end">
                         <li><a href="{{ url('/profile/' . Auth::user()->username) }}" class="dropdown-item">Profile</a></li>
-                        <li><a href="{{ url(path: '/notifications') }}" class="dropdown-item">Notifications</a></li>
+                        <li>
+                            <a href="{{ route('notifications.index') }}" class="dropdown-item">
+                                Notifications
+                                @if(isset($unreadNotifications) && $unreadNotifications->count() > 0)
+                                    <span class="badge bg-danger ms-2">{{ $unreadNotifications->count() }}</span>
+                                @endif
+                            </a>
+                        </li>
                         <!--
                         @if (Auth::user()->admin)
                         <li>
@@ -35,6 +42,11 @@
 
                         This should become a button to lead you to a user search page.
                         -->
+                        @if (Auth::user()->admin)
+                        <!-- Admin can view and resolve reports -->
+                        <li><a href="{{ route('reports.index') }}" class="dropdown-item">Reports</a></li>
+                        @endif
+                        
                         <li><a href="{{ url('/logout') }}" class="dropdown-item">Logout</a></li>
                     </ul>
                 </div>

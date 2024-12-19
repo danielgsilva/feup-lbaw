@@ -72,20 +72,36 @@ function toggleOrderQuestions() {
 
 function toggleAnswerForm() {
   const answerForm = document.getElementById('answer-form');
+  const commentForm = document.getElementById('comment-form');
+
   if (answerForm.style.display === 'none') {
     answerForm.style.display = 'block';
+    if (commentForm) commentForm.style.display = 'none';
   } else {
     answerForm.style.display = 'none';
   }
 }
 
 function toggleCommentForm() {
-  var commentForm = document.getElementById('comment-form');
+  const commentForm = document.getElementById('comment-form');
+  const answerForm = document.getElementById('answer-form');
+
   if (commentForm.style.display === 'none') {
     commentForm.style.display = 'block';
+    if (answerForm) answerForm.style.display = 'none';
   } else {
     commentForm.style.display = 'none';
   }
 }
 
 addEventListeners();
+
+document.addEventListener('DOMContentLoaded', function () {
+  var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+  var toastList = toastElList.map(function (toastEl) {
+      return new bootstrap.Toast(toastEl, {
+          autohide: true
+      });
+  });
+  toastList.forEach(toast => toast.show());
+});
