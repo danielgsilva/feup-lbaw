@@ -3,6 +3,11 @@
 @section('title', 'Ask a Question')
 
 @section('content')
+    @section('scripts')
+        <script>const tags = @json($tags);</script>
+        <script>const max_tags = 5; </script>
+    @endsection
+
 <section id="ask-question" class="container my-5">
     <h1 class="mb-4">Ask a Question</h1>
 
@@ -29,6 +34,10 @@
             <label for="content" class="form-label">Content:</label>
             <textarea name="content" id="content" class="form-control" rows="10" required></textarea>
         </div>
+
+        @include('pages.tags')
+        
+        @include('partials.toast')
         
         <button type="submit" class="btn btn-primary">Submit Question</button>
     </form>
