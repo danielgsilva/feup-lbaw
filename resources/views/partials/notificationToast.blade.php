@@ -1,8 +1,8 @@
 @if(isset($unreadNotifications) && $unreadNotifications->count() > 0)
-<div class="toast-container position-fixed bottom-0 end-0 p-2">
+<div class="notification-toast toast-container position-fixed bottom-0 end-0 p-2">
     @foreach($unreadNotifications->take(2) as $notification)
     <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
+        <div class="toast-header"></div>
             <strong class="me-auto">Notification</strong>
             <small class="text-muted">{{ \Carbon\Carbon::parse($notification->date)->format('M d, Y H:i') }}</small>
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
