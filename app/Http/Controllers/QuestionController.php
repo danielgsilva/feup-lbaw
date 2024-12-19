@@ -121,6 +121,10 @@ class QuestionController extends Controller
 
     public function vote(Request $request, $id)
     {
+        if (!Auth::check()) {
+            return response()->json(['redirect' => route('login')], 401);
+        }
+        
         $request->validate([
             'vote' => 'required|in:1,-1,0', // 1 for upvote, -1 for downvote, 0 to remove vote
         ]);

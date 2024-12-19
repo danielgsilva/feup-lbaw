@@ -42,6 +42,11 @@
 
                         This should become a button to lead you to a user search page.
                         -->
+                        @if (Auth::user()->admin)
+                        <!-- Admin can view and resolve reports -->
+                        <li><a href="{{ route('reports.index') }}" class="dropdown-item">Reports</a></li>
+                        @endif
+                        
                         <li><a href="{{ url('/logout') }}" class="dropdown-item">Logout</a></li>
                     </ul>
                 </div>
