@@ -74,6 +74,9 @@ function markAsRead(notificationId) {
     }).then(response => {
         if (response.ok) {
             console.log('Notification marked as read.');
+            const toastElement = form.closest('.toast');
+            const toast = bootstrap.Toast.getInstance(toastElement);
+            toast.hide();
         } else {
             console.error('Failed to mark notification as read.');
         }
@@ -81,4 +84,9 @@ function markAsRead(notificationId) {
         console.error('Error:', error);
     });
 }
+</script>
+
+<script>
+    window.PUSHER_APP_KEY = "{{ env('PUSHER_APP_KEY') }}";
+    window.PUSHER_APP_CLUSTER = "{{ env('PUSHER_APP_CLUSTER') }}";
 </script>

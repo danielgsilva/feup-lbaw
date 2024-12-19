@@ -27,6 +27,7 @@
 <script type="text/javascript" src={{ url('js/app.js') }} defer></script>
 <script  src={{ asset('js/tags.js') }} type="module"></script>
 <script  src={{ asset('js/autocomplete.js') }} defer></script>
+<script src="https://js.pusher.com/7.0/pusher.min.js"></script>
 
 @yield('scripts')
 

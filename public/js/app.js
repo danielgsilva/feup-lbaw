@@ -105,3 +105,53 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   toastList.forEach(toast => toast.show());
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+  const pusher = new Pusher(window.PUSHER_APP_KEY, {
+      cluster: window.PUSHER_APP_CLUSTER,
+      encrypted: true
+  });
+
+  const channel = pusher.subscribe('notifications');
+  channel.bind('notification-read', function(data) {
+      showModal(data.message);
+  });
+});
+
+function showModal(message) {
+  if (document.querySelector('.modal.show')) {
+    return; 
+  }
+
+  // Create the modal HTML structure
+  const modalHTML = `
+    <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="notificationModalLabel">New Notification</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            ${message}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+  const modalElement = document.getElementById('notificationModal');
+
+  const modal = new bootstrap.Modal(modalElement);
+
+  modal.show();
+
+  modalElement.addEventListener('hidden.bs.modal', function () {
+    modalElement.remove(); 
+  });
+}
