@@ -17,11 +17,13 @@ class NotificationRead implements ShouldBroadcastNow
 
     public $message;
     public $notificationId;
+    public $viewed;
 
-    public function __construct($notificationId)
+    public function __construct($notificationId,$viewed)
     {
         $this->notificationId = $notificationId;
-        $this->message = 'Notification marked as read successfully.';
+        $this->viewed = $viewed;
+        $this->message = $viewed ? 'Notification marked as read successfully.' : 'Notification marked as unread successfully.';
     }
 
     public function broadcastOn()

@@ -25,16 +25,17 @@ class NotificationController extends Controller
         return view('pages.notifications', compact('notifications', 'unreadNotifications'));
     }
 
-    public function markAsRead($id)
+    public function markAsRead($id, Request $request)
     {
-        $notification = Notification::findOrFail($id);
-        $notification->viewed = !$notification->viewed;
-        $notification->save();
-
-        event(new NotificationRead($id));
-
-        session()->flash('notification', 'Notification status updated successfully.');
-
-        return redirect()->back();
+        $notification = Notification::find($id);
+        if ($notification) {
+            $viewed = $request->input('viewed');
+            $notification->viewed = $viewed;
+            $notification->save();
+            event(new NotificationRead($notification->id, $viewed));
+            return response()->json(['success' => true]);
+        } else {
+            return response()->json(['success' => false], 404);
+        }
     }
 }

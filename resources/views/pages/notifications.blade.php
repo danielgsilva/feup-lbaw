@@ -81,7 +81,7 @@ function markAsRead(notificationId, button) {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
-        body: JSON.stringify({ viewed: !button.classList.contains('btn-primary') })
+        body: JSON.stringify({ viewed: button.classList.contains('btn-primary') })
     })
     .then(response => response.json())
     .then(data => {
