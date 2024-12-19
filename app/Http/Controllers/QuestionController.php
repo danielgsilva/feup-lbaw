@@ -83,7 +83,8 @@ class QuestionController extends Controller
     {
         $question = Question::findOrFail($id);
         $this->authorize('update', $question);
-        return view('pages.editquestion', compact('question'));
+        $tags = Tag::all();
+        return view('pages.editquestion', compact('question', 'tags'));
     }
 
     public function update(Request $request, $id)
@@ -95,9 +96,18 @@ class QuestionController extends Controller
         $request->validate([
             'title' => 'required|string|max:1000',
             'content' => 'required|string',
+            'tagList' => 'max:5',
+            'tagList.*' => 'distinct',
         ]);
 
         // Update the question
+        $tags = $request->get('tagList');
+        if ($tags != null) {
+            $question->tags()->detach();
+            foreach ($tags as $tag) {
+                $question->tags()->attach($tag);
+            }
+        }
         $question->title = $request->title;
         $question->content = $request->content;
         $question->edited = true;

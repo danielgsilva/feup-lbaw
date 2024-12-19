@@ -3,6 +3,13 @@
 @section('title', 'Edit Question')
 
 @section('content')
+
+    @section('scripts')
+        <script> const tags = @json($tags);</script>
+        <script> const max_tags = 5; </script>
+        <script> const oldTagsList = @json($question->tags); </script>
+    @endsection
+
 <div class="container my-4">
     <div class="card">
         <div class="card-header">
@@ -24,6 +31,10 @@
                     <label for="content" class="form-label">Body</label>
                     <textarea name="content" id="content" class="form-control" rows="5" required>{{ $question->content }}</textarea>
                 </div>
+
+                @include('pages.tags')
+        
+                @include('partials.toast')
 
                 <!-- Submit Button -->
                 <button type="submit" class="btn btn-success">Update Question</button>
