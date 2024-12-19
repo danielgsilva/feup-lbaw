@@ -10,7 +10,7 @@
 
     <div id="notifications-list">
         @foreach($notifications as $notification)
-            <div class="card mb-3 notification-item {{ $notification->viewed ? 'bg-light' : 'bg-white' }}" data-viewed="{{ $notification->viewed }}">
+            <div class="card mb-3 notification-item {{ $notification->viewed ? 'bg-light' : 'bg-white' }}" data-viewed="{{ $notification->viewed }}" data-id="{{ $notification->id }}">
                 <div class="card-body">
                     <h5 class="card-title">
                         @if($notification->id_answer)
@@ -49,12 +49,9 @@
                         @endif
                     </p>
                     <small class="text-muted">{{ $notification->date }}</small>
-                    <form action="{{ route('notifications.read', $notification->id) }}" method="POST" class="d-inline">
-                        @csrf
-                        <button type="submit" class="btn btn-sm {{ $notification->viewed ? 'btn-secondary' : 'btn-primary' }}">
-                            {{ $notification->viewed ? 'Mark as Unread' : 'Mark as Read' }}
-                        </button>
-                    </form>
+                    <button type="button" class="btn btn-sm {{ $notification->viewed ? 'btn-secondary' : 'btn-primary' }}" onclick="markAsRead({{ $notification->id }}, this)">
+                        {{ $notification->viewed ? 'Mark as Unread' : 'Mark as Read' }}
+                    </button>
                 </div>
             </div>
         @endforeach
@@ -76,5 +73,31 @@ document.getElementById('toggle-notifications').addEventListener('click', functi
     });
     this.textContent = showUnread ? 'Show All Notifications' : 'Show Unread Notifications';
 });
+
+function markAsRead(notificationId, button) {
+    fetch(`/notifications/${notificationId}/read`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ viewed: !button.classList.contains('btn-primary') })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            button.classList.toggle('btn-primary');
+            button.classList.toggle('btn-secondary');
+            button.textContent = button.classList.contains('btn-primary') ? 'Mark as Read' : 'Mark as Unread';
+            const notificationItem = button.closest('.notification-item');
+            notificationItem.dataset.viewed = button.classList.contains('btn-primary') ? '0' : '1';
+            notificationItem.classList.toggle('bg-white');
+            notificationItem.classList.toggle('bg-light');
+        } else {
+            console.error('Failed to mark notification as read.');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
 </script>
 @endsection
