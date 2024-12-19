@@ -7,6 +7,7 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 
+use App\Models\Tag;
 use App\Models\User;
 
 class UserProfileController extends Controller
@@ -63,10 +64,13 @@ class UserProfileController extends Controller
         $user = $authUser;
     }
 
+    $tags = Tag::all();
+
     // Render the edit profile page with the target user
     return view('pages.editprofile', [
         'user' => $user,
-        'isAdminEditing' => $username && $authUser->admin
+        'isAdminEditing' => $username && $authUser->admin,
+        'tags' => $tags
     ]);
 }
 
@@ -94,7 +98,17 @@ public function updateProfile(Request $request, string $username = null): Redire
         'name' => 'required|string|max:255',
         'username' => 'required|string|max:255|unique:users,username,' . $user->id,
         'bio' => 'nullable|string|max:1000',
+        'tagList' => 'max:5',
+        'tagList.*' => 'sometimes|distinct|max:100|string',
     ]);
+
+    $tags = $request->get('tagList');
+    if ($tags != null) {
+        $user->tags()->detach();
+        foreach ($tags as $tag) {
+            $user->tags()->attach($tag);
+        }
+    }
 
     // Update user information
     $user->update($validatedData);

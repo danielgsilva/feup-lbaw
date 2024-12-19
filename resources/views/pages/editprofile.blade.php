@@ -39,7 +39,15 @@
             <textarea name="bio" id="bio" class="form-control" rows="3">{{ old('bio', $user->bio) }}</textarea>
         </div>
 
+        @include('pages.tags')
+        
+        @include('partials.toast')
+
         <button type="submit" class="button">Save Changes</button>
     </form>
 </div>
+
+<script>const max_tags = 5</script>
+<script>const tags = @json($tags);</script>
+<script> const oldTagsList = @json($user->tags); </script>
 @endsection
