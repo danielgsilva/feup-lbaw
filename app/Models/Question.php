@@ -49,7 +49,7 @@ class Question extends Model
 
     public function tags(): BelongsToMany
     {
-        return $this->belongsToMany(Tag::class, 'question_tag');
+        return $this->belongsToMany(Tag::class, 'question_tag', 'id_question', 'id_tag');
     }
 
     public function followers(): BelongsToMany

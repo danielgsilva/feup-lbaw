@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Question;
+use App\Models\Tag;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -38,7 +39,9 @@ class QuestionController extends Controller
         if(Auth::user()->ban){
             return redirect()->route('home')->with('error', 'You are banned and cannot create questions.');
         }
-        return view('pages.createquestion');
+
+        $tags = Tag::all();
+        return view('pages.createquestion', ['tags' => $tags]);
     }
 
     public function store(Request $request)
@@ -53,9 +56,9 @@ class QuestionController extends Controller
         $request->validate([
             'title' => 'required|string|max:1000',
             'content' => 'required|string',
+            'tagList' => 'max:5',
+            'tagList.*' => 'distinct',
         ]);
-
-        
 
         // Create the question
         $question = new Question();
@@ -63,6 +66,14 @@ class QuestionController extends Controller
         $question->content = $request->content;
         $question->id_user = auth()->id(); // Assuming the user is logged in
         $question->save();
+
+        // Add tags to the question
+        $tags = $request->get('tagList');
+        if ($tags != null) {
+            foreach ($tags as $tag) {
+                $question->tags()->attach($tag);
+            }
+        }
 
         // Redirect to the home page 
         return redirect()->route('home')->with('success', 'Question created successfully!');
