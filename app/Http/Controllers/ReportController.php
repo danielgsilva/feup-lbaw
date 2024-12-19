@@ -101,6 +101,15 @@ class ReportController extends Controller
                 $answer = Answer::find($validated['id_entity']);
                 return redirect()->route('questions.show', ['id' => $answer->id_question])
                          ->with('success', 'Report enviado com sucesso!');
+            case 'comment':
+                $comment = Comment::find($validated['id_entity']);
+                if ($comment->id_question) {
+                    return redirect()->route('questions.show', ['id' => $comment->id_question])
+                                     ->with('success', 'Report enviado com sucesso!');
+                } else {
+                    return redirect()->route('answers.comments', ['id' => $comment->id_answer])
+                                     ->with('success', 'Report enviado com sucesso!');
+                }
                 
         }
     }

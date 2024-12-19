@@ -55,4 +55,15 @@ class CommentController extends Controller
 
         return redirect()->back()->with('success', 'Your comment has been updated.');
     }
+
+    public function show($id)
+    {
+        
+        $comment = Comment::findOrFail($id);
+    
+    
+        return view('pages.commentsshow', compact('comment'));
+    }
+    
+
 }
