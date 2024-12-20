@@ -214,19 +214,27 @@ public function deleteUser(string $username): RedirectResponse
         return redirect()->route('profile.show', ['username' => $user->username])->with('success', $user->ban ? 'User banned successfully.' : 'User unbanned successfully.');
     }
 
-    public function search(Request $request): View
+    public function searchUsersPage(): View
     {
-
-        $request->validate([
-            'query' => 'required|string|max:255',
-        ]);
-
-        $query = $request->input('query');
-
-        $users = User::where('name', 'ILIKE', "%$query%")
-            ->orWhere('username', 'ILIKE', "%$query%")
-            ->get();
-
-        return view('pages.searchusers', ['users' => $users]);
+        return view('pages.searchusers');
     }
+
+
+    public function searchUsers(Request $request)
+{
+    $request->validate([
+        'query' => 'required|string|max:255',
+    ]);
+
+    $query = $request->input('query');
+
+    
+    $users = User::where('name', 'ILIKE', "%$query%")
+                 ->orWhere('username', 'ILIKE', "%$query%")
+                 ->get();
+
+    
+    return response()->json($users);
+}
+
 }

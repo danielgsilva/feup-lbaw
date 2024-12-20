@@ -17,6 +17,7 @@ use App\Http\Controllers\GitHubController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\TagController;
 
 
 
@@ -123,7 +124,10 @@ Route::controller(PasswordResetController::class)->group(function () {
 // User Profile
 Route::controller(UserProfileController::class)->group(function () {
     Route::get('/profile/edit', [UserProfileController::class, 'editProfile'])->name('profile.edit');
-    Route::get('/profile/search', [UserProfileController::class, 'search'])->name('profile.search');
+    
+Route::get('/profile/search', [UserProfileController::class, 'searchUsersPage'])->name('profile.searchPage');
+Route::get('/profile/search/results', [UserProfileController::class, 'searchUsers'])->name('profile.searchResults');
+
     Route::patch('/profile/edit', [UserProfileController::class, 'updateProfile'])->name('profile.update');
     Route::get('/profile/{username}', [UserProfileController::class, 'showProfile'])->name('profile.show');
     Route::delete('/profile/{username}', [UserProfileController::class, 'deleteUser'])->name('profile.delete');
@@ -140,6 +144,7 @@ Route::controller(CommentController::class)->group(function () {
     Route::get('/comments/{id}/edit', 'edit')->name('comments.edit');
     Route::put('/comments/{id}', 'update')->name('comments.update');
     Route::delete('/comments/{id}', 'destroy')->name('comments.destroy');
+    Route::get('/comments/{id}', 'show')->name('comments.show');
 });
 
 // Votes
@@ -165,4 +170,16 @@ Route::controller(ReportController::class)->group(function () {
     Route::put('/reports/{report}/resolve', [ReportController::class, 'resolve'])->name('reports.resolve');
     Route::get('/report/{type}/{id}', [ReportController::class, 'create'])->name('report.create');
     Route::post('/report', [ReportController::class, 'store'])->name('report.store');
+});
+
+
+// Tags
+
+Route::controller(TagController::class)->group(function () {
+    Route::get('/tags/manage', 'index')->name('tags.index');
+    Route::get('/tags/create', 'create')->name('tags.create');
+    Route::post('/tags/create', 'store')->name('tags.store');
+    Route::get('/tags/{tag}/edit', 'edit')->name('tags.edit');
+    Route::patch('/tags/{tag}', 'update')->name('tags.update');
+    Route::delete('/tags/{tag}', 'destroy')->name('tags.destroy');
 });
