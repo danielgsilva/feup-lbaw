@@ -9,10 +9,15 @@
                     {{ csrf_field() }}
 
                     <div class="text-center mb-4">
-                        <img src="{{ asset('storage/profile_images/default.png') }}" alt="profile image" class="img-thumbnail rounded-circle mb-3" width="120" height="120">
+                        <img id="register-image" src="{{ asset('storage/profile_images/default.png') }}" alt="profile image" class="img-thumbnail rounded-circle mb-3" width="120" height="120">
                         <div>
-                            <label for="profile_image" class="form-label">Imagem de Perfil</label>
-                            <input id="profile_image" type="file" name="profile_image" class="form-control">
+                            <label for="register-file" class="form-label">Profile Image</label>
+                            <input id="register-file" type="file" name="profile_image" class="form-control">
+                            <span id="profile-image-error" class="error">
+                                @if ($errors->has('profile-image'))
+                                    {{ $errors->first('profile-image') }}
+                                @endif
+                            </span>
                         </div>
                     </div>
 
