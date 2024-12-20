@@ -5,7 +5,7 @@
 <div class="container my-5">
     <h1 class="mb-4 text-center">User Profile</h1>
 
-    <div class="card shadow-sm">
+    <div class="card bg-body-secondary bg-gradient shadow-sm">
         <div class="card-body text-center">
             <h3 class="card-title">{{ $user->name }}</h3>
             
