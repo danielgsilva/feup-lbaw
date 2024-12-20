@@ -1,7 +1,7 @@
 @if(isset($unreadNotifications) && $unreadNotifications->count() > 0)
 <div class="notification-toast toast-container position-fixed bottom-0 end-0 p-2">
     @foreach($unreadNotifications->take(2) as $notification)
-    <div class="notification-toast toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="notification-{{ $notification->id }}" class="notification-toast toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
             <strong class="me-auto">Notification</strong>
             <small class="text-muted">{{ \Carbon\Carbon::parse($notification->date)->format('M d, Y H:i') }}</small>
@@ -65,20 +65,29 @@ function markAsReadAndRedirect(notificationId, url) {
 }
 
 function markAsRead(notificationId) {
-    const form = document.getElementById('mark-as-read-' + notificationId);
-    const formData = new FormData(form);
-
-    fetch(form.action, {
+    fetch(`/notifications/${notificationId}/read`, {
         method: 'POST',
-        body: formData,
-    }).then(response => {
-        if (response.ok) {
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ viewed: true })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
             console.log('Notification marked as read.');
+            const toastElement = document.getElementById('notification-' + notificationId);
+            if (toastElement) {
+                const toast = new bootstrap.Toast(toastElement);
+                toast.hide();
+            } else {
+                console.error('Toast element not found.');
+            }
         } else {
             console.error('Failed to mark notification as read.');
         }
-    }).catch(error => {
-        console.error('Error:', error);
-    });
+    })
+    .catch(error => console.error('Error:', error));
 }
 </script>

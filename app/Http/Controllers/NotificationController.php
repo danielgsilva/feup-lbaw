@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Notification;
+use App\Events\UserNotification;
 use Illuminate\Support\Facades\Auth;
+use App\Events\NotificationRead;
+
 
 class NotificationController extends Controller
 {
@@ -22,14 +25,17 @@ class NotificationController extends Controller
         return view('pages.notifications', compact('notifications', 'unreadNotifications'));
     }
 
-    public function markAsRead($id)
+    public function markAsRead($id, Request $request)
     {
-    $notification = Notification::findOrFail($id);
-    $notification->viewed = !$notification->viewed;
-    $notification->save();
-
-    session()->flash('notification', 'Notification status updated successfully.');
-
-    return redirect()->back();
+        $notification = Notification::find($id);
+        if ($notification) {
+            $viewed = $request->input('viewed');
+            $notification->viewed = $viewed;
+            $notification->save();
+            event(new NotificationRead($notification->id, $viewed));
+            return response()->json(['success' => true]);
+        } else {
+            return response()->json(['success' => false], 404);
+        }
     }
 }

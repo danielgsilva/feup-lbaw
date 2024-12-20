@@ -32,6 +32,11 @@
                             <a href="{{ route('answers.comments', $report->answer->id) }}">
                                 {{ $report->content }}
                             </a>
+
+                        @elseif($report->comment)
+                            <a href="{{ route('comments.show', ['id' => $report->comment->id]) }}">
+                                {{ $report->content }}
+                            </a>
                         @else
                             {{ $report->content }}
                         @endif

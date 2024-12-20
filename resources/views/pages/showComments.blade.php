@@ -51,6 +51,7 @@
                     Commented by:
                     <a href="{{ route('profile.show', $comment->user->username) }}">{{ $comment->user->name }}</a>
                     on {{ $comment->date }}
+                    <a href="{{ route('report.create', ['type' => 'comment', 'id' => $comment->id]) }}" class="btn btn-danger btn-sm">Report Comment</a>
                 </div>
             </div>
         </div>

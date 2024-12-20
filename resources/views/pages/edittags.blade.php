@@ -1,0 +1,28 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="container vh-100 d-flex justify-content-center align-items-center">
+    <div class="row w-100">
+        <div class="col-md-6 mx-auto">
+            <form action="{{ route('tags.update', $tag->id) }}" method="POST" class="p-4 border rounded bg-light shadow-sm">
+                @csrf
+                @method('PATCH')
+
+                <h1>Edit Tag</h1>
+
+                <div class="form-group mb-4">
+                    <label for="name" class="form-label">Tag Name</label>
+                    <input type="text" id="name" name="name" class="form-control" value="{{ old('name', $tag->name) }}" required>
+                    @if ($errors->has('name'))
+                        <span class="text-danger small">
+                            {{ $errors->first('name') }}
+                        </span>
+                    @endif
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3 w-100">Update Tag</button>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection
