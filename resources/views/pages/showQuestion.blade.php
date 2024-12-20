@@ -27,6 +27,21 @@
                     Anonymous on {{ $question->date }}
                 @endif
             </div>
+                <div class="dropdown">
+                <button 
+                    class="btn btn-secondary btn-sm dropdown-toggle" 
+                    type="button" 
+                    id="tagsDropdown" 
+                    data-bs-toggle="dropdown" 
+                    aria-expanded="false">
+                    Tags
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="tagsDropdown">
+                    @foreach($question->tags as $tag)
+                        <li><a class="dropdown-item" href="{{ route('tags.show', $tag->id) }}">{{ $tag->name }}</a></li>
+                    @endforeach
+                </ul>
+            </div>
             @if (Auth::check() && Auth::id() !== $question->id_user)
                  <a href="{{ route('report.create', ['type' => 'question', 'id' => $question->id]) }}" class="btn btn-danger btn-sm">Report Question</a>
              @endif

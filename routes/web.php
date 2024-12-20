@@ -182,4 +182,5 @@ Route::controller(TagController::class)->group(function () {
     Route::get('/tags/{tag}/edit', 'edit')->name('tags.edit');
     Route::patch('/tags/{tag}', 'update')->name('tags.update');
     Route::delete('/tags/{tag}', 'destroy')->name('tags.destroy');
+    Route::get('/tasg/{id}', 'show')->name('tags.show');
 });
