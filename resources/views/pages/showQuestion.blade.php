@@ -91,13 +91,17 @@
 
     <!-- Question Actions -->
     @if ((Auth::check() && Auth::id() === $question->id_user) || (Auth::check() && Auth::user()->admin))
-        <div class="d-flex mb-4 gap-2">
-            <a href="{{ route('questions.edit', $question->id) }}" class="btn btn-primary">Edit Question</a>
-            <form action="{{ route('questions.destroy', $question->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this question?');">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-danger">Delete</button>
-            </form>
+        <div class="row mb-4">
+            <div class="col-6 col-sm-2">
+                <a href="{{ route('questions.edit', $question->id) }}" class="btn btn-primary">Edit Question</a>
+            </div>
+            <div class="col-6">
+                <form action="{{ route('questions.destroy', $question->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this question?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
         </div>
     @endif
 

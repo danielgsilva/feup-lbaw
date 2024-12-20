@@ -83,7 +83,7 @@
                 </div>
             </div>
         @empty
-            <div class="alert alert-info text-center">
+            <div class="alert bg-body-secondary bg-gradient text-center">
                 <p>No questions found.</p>
             </div>
         @endforelse
@@ -109,7 +109,7 @@
                 </div>
             </div>
         @empty
-            <div class="alert alert-info text-center">
+            <div class="alert bg-body-secondary bg-gradient text-center">
                 <p>No answers found.</p>
             </div>
         @endforelse
