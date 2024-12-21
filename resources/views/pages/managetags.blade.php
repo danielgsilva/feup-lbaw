@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="container mt-3 mb-3">
     <h1>Manage Tags</h1>
 
     @if(session('success'))
@@ -16,7 +16,7 @@
         </script>
     @endif
 
-    <a href="{{ route('tags.create') }}" class="btn btn-primary mb-3">Create New Tag</a>
+    <a href="{{ route('tags.create') }}" class="btn btn-primary mt-2 mb-3">Create New Tag</a>
 
     <table class="table">
         <thead>

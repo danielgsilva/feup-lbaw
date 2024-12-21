@@ -26,7 +26,7 @@
 
                 <div class="form-group mb-4">
                     <label for="content">Report reason:</label>
-                    <textarea name="content" id="content" class="form-control w-100" rows="6" required></textarea>
+                    <textarea name="content" id="content" class="form-control w-100" rows="6" placeholder="Describe the reason for your report" required></textarea>
                 </div>
 
                 <button type="submit" class="btn btn-danger w-100 mb-3">Send Report</button>

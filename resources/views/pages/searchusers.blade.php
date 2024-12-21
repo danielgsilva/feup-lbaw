@@ -2,15 +2,15 @@
 
 @section('content')
 <div class="container">
-    <h2 class="my-4">Pesquisar Utilizadores</h2>
+    <h2 class="my-4">Search Users</h2>
 
     <div class="mb-4">
-        <input type="text" id="search-input" class="form-control" placeholder="Pesquise utilizadores..." />
+        <input type="text" id="search-input" class="form-control" placeholder="Search users..." />
     </div>
 
     <div id="loading-indicator" class="text-center d-none">
         <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">A carregar...</span>
+            <span class="visually-hidden">Loading...</span>
         </div>
     </div>
 
