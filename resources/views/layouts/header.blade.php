@@ -26,7 +26,7 @@
                         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Admin Panel
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
+                        <ul class="dropdown-menu dropdown-menu-start dropdown-menu-md-start dropdown-menu-lg-end">
                             <li><a href="{{ route('reports.index') }}" class="dropdown-item">Reports</a></li>
                             <li><a href="{{ route('profile.searchPage') }}" class="dropdown-item">Search Users</a></li>
                             <li><a href="{{ route('tags.index') }}" class="dropdown-item">Manage Tags   </a></li>
@@ -39,7 +39,7 @@
                         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {{ Auth::user()->name }}
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
+                        <ul class="dropdown-menu dropdown-menu-start dropdown-menu-md-start dropdown-menu-lg-end">
                             <li><a href="{{ url('/profile/' . Auth::user()->username) }}" class="dropdown-item">Profile</a></li>
                             <li>
                                 <a href="{{ route('notifications.index') }}" class="dropdown-item">

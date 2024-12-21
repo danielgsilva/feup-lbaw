@@ -5,7 +5,7 @@
 <div class="container my-5">
     <h1 class="mb-4 text-center">User Profile</h1>
 
-    <div class="card shadow-sm">
+    <div class="card bg-body-secondary bg-gradient shadow-sm">
         <div class="card-body text-center">
             <h3 class="card-title">{{ $user->name }}</h3>
             
@@ -83,7 +83,7 @@
                 </div>
             </div>
         @empty
-            <div class="alert alert-info text-center">
+            <div class="alert bg-body-secondary bg-gradient text-center">
                 <p>No questions found.</p>
             </div>
         @endforelse
@@ -109,7 +109,7 @@
                 </div>
             </div>
         @empty
-            <div class="alert alert-info text-center">
+            <div class="alert bg-body-secondary bg-gradient text-center">
                 <p>No answers found.</p>
             </div>
         @endforelse

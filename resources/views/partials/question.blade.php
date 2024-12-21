@@ -1,11 +1,13 @@
 <div class="card mb-4">
     <div class="card-body">
-        <h2><a href="{{ route('questions.show', $question->id) }}" class="text-decoration-none text-dark">{{ $question->title }}</a>
+        <h2 class="d-flex justify-content-between align-items-center">
+            <a href="{{ route('questions.show', $question->id) }}" class="text-decoration-none text-dark">{{ $question->title }}</a>
+            @if ($question->edited)
+                <span class="badge bg-transparent text-muted ms-2" style="font-size: 0.9rem;"><i>(Edited)</i></span>
+            @endif
         </h2>
-        @if ($question->edited)
-            <span class="badge bg-transparent text-muted ms-2"><i>(Edited)</i></span>
-        @endif
-        
+        <hr> <!-- Linha separadora abaixo do título -->
+
         <p>{{ $question->content }}</p>
 
         <div class="d-flex justify-content-between align-items-center">

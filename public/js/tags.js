@@ -108,7 +108,7 @@ function addTagOnInput() {
             toastListTag[0].show();
         }
         else if (tagsList.length >= max_tags) {
-            toastBodyTag.innerText = "Number of tags must be less than " + max_tags;
+            toastBodyTag.innerText = "Number of tags must be equal or less than " + max_tags;
             toastListTag[0].show();
         }
     });

@@ -7,6 +7,7 @@ use App\Models\Question;
 use App\Models\Tag;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Events\SendNotification;
 
 class QuestionController extends Controller
 {
@@ -201,6 +202,7 @@ class QuestionController extends Controller
             ->where('id_question', $question->id)
             ->value('value') ?? 0;
 
+        event(new SendNotification('Someone has voted on your question', $question->id_user, $question->id, null, true));
         return response()->json([
             'votes' => $question->votes,
             'userVote' => $userVote,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\SendNotification;
 use Illuminate\Http\Request;
 use App\Models\Answer;
 use App\Models\Question;
@@ -52,6 +53,8 @@ class AnswerController extends Controller
             'id_user' => Auth::id(),
             'id_question' => $request->input('id_question'),
         ]);
+
+        event(new SendNotification('There is a new answer to your question.', $question->id_user, $question->id, null, false));
 
         // Redirect back to the question page
         return redirect()->route('questions.show', $request->input('id_question'))
@@ -168,6 +171,7 @@ class AnswerController extends Controller
             ->value('value') ?? 0;
     
         // Return a JSON response with updated vote count and user's vote
+        event(new SendNotification('Someone has voted on your answer', $answer->id_user, $answer->id_question, $answer->id, true));
         return response()->json([
             'votes' => $answer->votes,
             'userVote' => $userVote,

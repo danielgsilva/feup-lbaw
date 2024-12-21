@@ -37,4 +37,3 @@
 </section>
 @endsection
 
-@include('partials.notificationToast')
