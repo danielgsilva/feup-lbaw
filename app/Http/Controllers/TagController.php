@@ -58,4 +58,13 @@ class TagController extends Controller
 
         return redirect()->route('tags.index')->with('success', 'Tag deleted!');
     }
+
+    public function show($id)
+    {
+        
+        $tag = Tag::findOrFail($id);
+    
+    
+        return view('pages.tagshow', compact('tags'));
+    }
 }
