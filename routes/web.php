@@ -78,6 +78,9 @@ Route::controller(AnswerController::class)->group(function () {
     Route::get('/answers/{id}/edit', [AnswerController::class, 'edit'])->name('answers.edit');
     Route::put('/answers/{id}', [AnswerController::class, 'update'])->name('answers.update');
     Route::delete('/answers/{id}', [AnswerController::class, 'destroy'])->name('answers.destroy');
+
+    // Accept answer
+    Route::post('/answers/{id}/accept', [AnswerController::class, 'accept'])->name('answers.accept');
 });
 
 // This are the routes that require authentication. If any other are added do not forget to add them here

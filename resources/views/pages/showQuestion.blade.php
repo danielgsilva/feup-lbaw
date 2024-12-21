@@ -233,7 +233,8 @@
             </div>
             @else
             @foreach($answers as $answer)
-            <div class="card mb-3 border-1 shadow-sm mb-2"  id="answer-{{ $answer->id }}">
+            <div class="card mb-3 border-1 shadow-sm mb-2 answer-question-card"  id="answer-{{ $answer->id }}">
+                <input type="hidden" class="answer-id" value="{{$answer->id}}">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div class="flex-grow-1">
@@ -290,6 +291,22 @@
                                 <i class="bi bi-hand-thumbs-down"></i> Dislike
                             </button>
                             <span class="badge bg-secondary" id="vote-answer-{{ $answer->id }}">Votes: {{ $answer->votes }}</span>
+                        </div>
+
+                        <div>
+                            @can('accept', $answer)
+                                @if ($answer->accepted)
+                                    <button class="mark-accepted btn btn-link mark-accepted-{{$answer->id}}" type="submit">Unmark as accepted</button>
+                                @else
+                                    <button class="mark-accepted btn btn-link mark-accepted-{{$answer->id}}" type="submit">Mark as accepted</button>
+                                @endif
+                            @endcan
+                        </div>
+
+                        <div class="accepted-icon-{{$answer->id}}">
+                            @if ($answer->accepted)
+                                <i class="fa-solid fa-check"></i>
+                            @endif
                         </div>
                     </div>
                 </div>
