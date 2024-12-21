@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Notification;
-use App\Events\UserNotification;
 use Illuminate\Support\Facades\Auth;
-use App\Events\NotificationRead;
-
+use App\Events\SendNotification;
 
 class NotificationController extends Controller
 {
@@ -32,10 +30,18 @@ class NotificationController extends Controller
             $viewed = $request->input('viewed');
             $notification->viewed = $viewed;
             $notification->save();
-            event(new NotificationRead($notification->id, $viewed));
             return response()->json(['success' => true]);
         } else {
             return response()->json(['success' => false], 404);
+        }
+    }
+
+    public function getNotification($id){
+        $notification = Notification::find($id);
+        if($notification){
+            return response()->json($notification);
+        } else {
+            return response()->json(['error' => 'Notification not found.'], 404);
         }
     }
 }
