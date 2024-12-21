@@ -32,7 +32,7 @@
 
                     <div class="text-center mb-4">
                     
-                        <img id="register-image" src="{{ asset('storage/' . $user->image->image_path) }}" alt="profile image" class="img-thumbnail rounded-circle mb-3" width="120" height="120">
+                        <img id="register-image" src="{{ $user->image ? asset('storage/' . $user->image->image_path) : asset('storage/profile_images/default.png') }}" alt="profile image" class="img-thumbnail rounded-circle mb-3" width="120" height="120">
                             <div>
                                 <label for="register-file" class="form-label">Profile Image</label>
                                 <input id="register-file" type="file" name="profile_image" class="form-control">
