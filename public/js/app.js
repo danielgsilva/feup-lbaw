@@ -95,7 +95,7 @@ function toggleCommentForm() {
 }
 
 addEventListeners();
-
+/*
 document.addEventListener('DOMContentLoaded', function () {
   var toastElList = [].slice.call(document.querySelectorAll('.notification-toast'));
   var toastList = toastElList.map(function (toastEl) {
@@ -105,53 +105,72 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   toastList.forEach(toast => toast.show());
 });
+*/
 
-document.addEventListener('DOMContentLoaded', function () {
-  const pusher = new Pusher(window.PUSHER_APP_KEY, {
-      cluster: window.PUSHER_APP_CLUSTER,
-      encrypted: true
-  });
+function showToast(notification) {
+    if (!notification) {
+        console.error("Notification is undefined");
+        return;
+    }
 
-  const channel = pusher.subscribe('notifications');
-  channel.bind('notification-read', function(data) {
-      showModal(data.message);
-  });
+    console.log("showToast called with notification:", notification);
+
+    // Create the toast HTML structure
+    const toastHTML = `
+        <div class="toast notification-toast position-fixed bottom-0 end-0 p-2 me-2" id="notification-toast" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 1055;">
+            <div class="toast-header">
+                <strong class="me-auto">Notification</strong>
+                <small class="text-muted">${new Date().toLocaleString()}</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${notification.message}
+                <p>Go to your notification page to see more</p>
+            </div>
+        </div>
+    `;
+
+    console.log("Showing toast:", toastHTML);
+
+    document.body.insertAdjacentHTML('beforeend', toastHTML);
+
+    const toastElement = document.getElementById("notification-toast");
+    console.log("Toast element:", toastElement);
+
+    if (!toastElement) {
+        console.error("Toast element not found");
+        return;
+    }
+
+    const toast = new bootstrap.Toast(toastElement, { autohide: true, delay:5000 });
+
+    toast.show();
+
+    toastElement.addEventListener('hidden.bs.toast', function () {
+        toastElement.remove();
+    });
+}
+
+// Existing code to initialize Pusher and subscribe to the channel
+const pusher = new Pusher(window.PUSHER_APP_KEY, {
+    cluster: window.PUSHER_APP_CLUSTER,
+    encrypted: true,
+    forceTLS: true,
+    authEndpoint: '/broadcasting/auth',
+    auth: {
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        },
+    },
 });
 
-function showModal(message) {
-  if (document.querySelector('.modal.show')) {
-    return; 
-  }
+const channel = pusher.subscribe("notifications." + window.userId);
+console.log("Subscribing to channel:", 'notifications.' + window.userId);
 
-  // Create the modal HTML structure
-  const modalHTML = `
-    <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="notificationModalLabel">New Notification</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            ${message}
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+channel.bind("notification-received", function(e) {
+    console.log("notification received");
+    console.log(e);
+    showToast(e);
+});
 
-  document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-  const modalElement = document.getElementById('notificationModal');
-
-  const modal = new bootstrap.Modal(modalElement);
-
-  modal.show();
-
-  modalElement.addEventListener('hidden.bs.modal', function () {
-    modalElement.remove(); 
-  });
-}
+console.log("Active Subscriptions:", pusher.channels);
