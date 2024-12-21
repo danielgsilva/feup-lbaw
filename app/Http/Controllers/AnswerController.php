@@ -177,5 +177,17 @@ class AnswerController extends Controller
             'userVote' => $userVote,
         ]);
     }
+
+    public function accept(Request $request)
+    {
+        $answer = Answer::find($request->id);
+        if (!Auth::check()) return response()->json(['error' => 'Not logged in']);
+        $this->authorize('accept', $answer);
+
+        $answer->accepted = !$answer->accepted;
+        $answer->save();
+
+        return response()->json(['success'=> 'Your request was completed', 'accepted' => $answer->accepted, 'id_answer' => $request->id]);
+    }
     
 }

@@ -31,6 +31,6 @@ class AnswerPolicy
 
     public function accept(User $user, Answer $answer): bool
     {
-        return Auth::check() && $answer->question->id_user === $user->id;
+        return Auth::check() && $answer->question->id_user === $user->id && $answer->id_user !== $user->id;
     }
 }
