@@ -15,6 +15,14 @@
     <script>
         window.PUSHER_APP_KEY = "{{ env('PUSHER_APP_KEY') }}";
         window.PUSHER_APP_CLUSTER = "{{ env('PUSHER_APP_CLUSTER') }}";
-        window.userId = {{ auth()->user()->id }};
     </script>
+
+    <script>
+        @if(auth()->check())
+            window.userId = {{ auth()->user()->id }};
+        @else
+            window.userId = null;
+        @endif
+    </script>
+
 </html>
