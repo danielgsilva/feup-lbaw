@@ -125,6 +125,7 @@ function showToast(notification) {
             </div>
             <div class="toast-body">
                 ${notification.message}
+                <p>Go to your notification page to see more</p>
             </div>
         </div>
     `;
@@ -141,7 +142,7 @@ function showToast(notification) {
         return;
     }
 
-    const toast = new bootstrap.Toast(toastElement, { autohide: false });
+    const toast = new bootstrap.Toast(toastElement, { autohide: true, delay:5000 });
 
     toast.show();
 
