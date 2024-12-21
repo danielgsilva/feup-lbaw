@@ -40,8 +40,16 @@ class RegisterController extends Controller
 
         if ($existingUser) {
             
-            return back()->withErrors(['username' => 'Este username já está em uso. Por favor, escolha outro.']);
+            return back()->withErrors(['username' => 'This username is already in use. Please, choose other.']);
         }
+
+        $existingUsermail = User::where('email', $request->email)->first();
+
+        if ($existingUsermail) {
+            
+            return back()->withErrors(['email' => 'This email is already in use. Please, choose other.']);
+        }
+
 
         $user = User::create([
             'username' => $request->username,

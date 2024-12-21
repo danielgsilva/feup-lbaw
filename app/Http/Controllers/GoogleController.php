@@ -14,23 +14,29 @@ class GoogleController extends Controller
 
     public function callbackGoogle() {
         $google_user = Socialite::driver('google')->stateless()->user();
-        $user = User::where('google_id', $google_user->getId())->first();
+
+        $user = User::where('email', $google_user->getEmail())->first();
 
         if (!$user) {
-            
             $new_user = User::create([
                 'name' => $google_user->getName(),
                 'email' => $google_user->getEmail(),
                 'google_id' => $google_user->getId(),
-                'username' => $google_user->getName(),
+                'username' => $google_user->getName(), 
             ]);
 
             Auth::login($new_user);
         } else {
+            
+            if (!$user->google_id) {
+                $user->google_id = $google_user->getId();
+                $user->save();
+            }
+
             Auth::login($user);
         }
 
-        // After login, redirect to homepage
+       
         return redirect()->intended('home');
     }
 }
