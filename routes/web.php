@@ -66,6 +66,8 @@ Route::controller(QuestionController::class)->group(function () {
     Route::get('/questions/{id}/edit', [QuestionController::class, 'edit'])->name('questions.edit');
     Route::put('/questions/{id}', [QuestionController::class, 'update'])->name('questions.update');
     Route::delete('/questions/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
+
+    Route::get('/questions/{id}/getVote', [QuestionController::class, 'getVote']);
 });
 
 // Answers
@@ -81,6 +83,8 @@ Route::controller(AnswerController::class)->group(function () {
 
     // Accept answer
     Route::post('/answers/{id}/accept', [AnswerController::class, 'accept'])->name('answers.accept');
+
+    Route::get('/answers/{id}/getVote', [AnswerController::class, 'getVote']);
 });
 
 // This are the routes that require authentication. If any other are added do not forget to add them here

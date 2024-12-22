@@ -208,5 +208,17 @@ class QuestionController extends Controller
             'userVote' => $userVote,
         ]);
     }
+    public function getVote($id)
+    {
+        $question = Question::findOrFail($id);
+        $user = Auth::user();
+        $userVote = DB::table('question_vote')
+            ->where('id_user', $user->id)
+            ->where('id_question', $question->id)
+            ->value('value') ?? 0;
+        return response()->json([
+            'userVote' => $userVote,
+        ]);
+    }
     
 }

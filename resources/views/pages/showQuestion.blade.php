@@ -80,12 +80,10 @@
 
                     
                     <div class="d-flex align-items-center">
-                        <button id="like-button" class="btn btn-outline-success btn-sm me-2
-                            @if($userVote == 1) bg-success text-white @endif" onclick="voteq({{ $question->id }}, 1)">
+                        <button id="like-button" class="btn btn-outline-success btn-sm me-2" onclick="voteq({{ $question->id }}, 1)">
                             <i class="bi bi-hand-thumbs-up"></i> Like
                         </button>
-                        <button id="dislike-button" class="btn btn-outline-danger btn-sm
-                            @if($userVote == -1) bg-danger text-white @endif" onclick="voteq({{ $question->id }}, -1)">
+                        <button id="dislike-button" class="btn btn-outline-danger btn-sm" onclick="voteq({{ $question->id }}, -1)">
                             <i class="bi bi-hand-thumbs-down"></i> Dislike
                         </button>
                         <span class="badge bg-secondary ms-2" id="vote">Votes: {{ $question->votes }}</span>
@@ -94,6 +92,36 @@
             </div>
 
             <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    fetchVoteStatus({{ $question->id }});
+                });
+
+                function fetchVoteStatus(questionId) {
+                    fetch(`/questions/${questionId}/getVote`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const likeButton = document.getElementById('like-button');
+                            const dislikeButton = document.getElementById('dislike-button');
+
+                            if (data.userVote === 1) {
+                                likeButton.classList.add('bg-success', 'text-white');
+                                dislikeButton.classList.remove('bg-danger', 'text-white');
+                                likeButton.setAttribute('onclick', `voteq(${questionId}, 0)`);
+                                dislikeButton.setAttribute('onclick', `voteq(${questionId}, -1)`);
+                            } else if (data.userVote === -1) {
+                                likeButton.classList.remove('bg-success', 'text-white');
+                                dislikeButton.classList.add('bg-danger', 'text-white');
+                                likeButton.setAttribute('onclick', `voteq(${questionId}, 1)`);
+                                dislikeButton.setAttribute('onclick', `voteq(${questionId}, 0)`);
+                            } else {
+                                likeButton.classList.remove('bg-success', 'text-white');
+                                dislikeButton.classList.remove('bg-danger', 'text-white');
+                                likeButton.setAttribute('onclick', `voteq(${questionId}, 1)`);
+                                dislikeButton.setAttribute('onclick', `voteq(${questionId}, -1)`);
+                            }
+                        });
+                }
+
                 function voteq(questionId, voteValue) {
                     fetch(`/questions/${questionId}/vote`, {
                         method: 'POST',
@@ -278,16 +306,10 @@
                         </div>
 
                         <div class="d-flex align-items-center">
-                            <button id="like-answer-{{ $answer->id }}" 
-                                    class="btn btn-outline-success btn-sm me-2
-                                    @if($userVote == 1) bg-success text-white @endif" 
-                                    onclick="votea({{ $answer->id }}, 1)">
+                            <button id="like-answer-{{ $answer->id }}" class="btn btn-outline-success btn-sm me-2" onclick="votea({{ $answer->id }}, 1)">
                                 <i class="bi bi-hand-thumbs-up"></i> Like
                             </button>
-                            <button id="dislike-answer-{{ $answer->id }}" 
-                                    class="btn btn-outline-danger btn-sm me-2
-                                    @if($userVote == -1) bg-danger text-white @endif" 
-                                    onclick="votea({{ $answer->id }}, -1)">
+                            <button id="dislike-answer-{{ $answer->id }}" class="btn btn-outline-danger btn-sm me-2" onclick="votea({{ $answer->id }}, -1)">
                                 <i class="bi bi-hand-thumbs-down"></i> Dislike
                             </button>
                             <span class="badge bg-secondary" id="vote-answer-{{ $answer->id }}">Votes: {{ $answer->votes }}</span>
@@ -317,6 +339,40 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const answerCards = document.querySelectorAll('.answer-question-card');
+            answerCards.forEach(card => {
+                const answerId = card.querySelector('.answer-id').value;
+                fetchVoteStatusForAnswer(answerId);
+            });
+        });
+
+        function fetchVoteStatusForAnswer(answerId) {
+            fetch(`/answers/${answerId}/getVote`)
+                .then(response => response.json())
+                .then(data => {
+                    const likeButton = document.getElementById(`like-answer-${answerId}`);
+                    const dislikeButton = document.getElementById(`dislike-answer-${answerId}`);
+                
+                    if (data.userVote === 1) {
+                        likeButton.classList.add('bg-success', 'text-white');
+                        dislikeButton.classList.remove('bg-danger', 'text-white');
+                        likeButton.setAttribute('onclick', `votea(${answerId}, 0)`);
+                        dislikeButton.setAttribute('onclick', `votea(${answerId}, -1)`);
+                    } else if (data.userVote === -1) {
+                        likeButton.classList.remove('bg-success', 'text-white');
+                        dislikeButton.classList.add('bg-danger', 'text-white');
+                        likeButton.setAttribute('onclick', `votea(${answerId}, 1)`);
+                        dislikeButton.setAttribute('onclick', `votea(${answerId}, 0)`);
+                    } else {
+                        likeButton.classList.remove('bg-success', 'text-white');
+                        dislikeButton.classList.remove('bg-danger', 'text-white');
+                        likeButton.setAttribute('onclick', `votea(${answerId}, 1)`);
+                        dislikeButton.setAttribute('onclick', `votea(${answerId}, -1)`);
+                    }
+                });
+        }
+
         function votea(answerId, voteValue) {
             fetch(`/answers/${answerId}/vote`, {
                 method: 'POST',
