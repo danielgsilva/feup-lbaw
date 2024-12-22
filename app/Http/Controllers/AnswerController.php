@@ -189,5 +189,17 @@ class AnswerController extends Controller
 
         return response()->json(['success'=> 'Your request was completed', 'accepted' => $answer->accepted, 'id_answer' => $request->id]);
     }
-    
+
+    public function getVote($id)
+    {
+        $answer = Answer::findOrFail($id);
+        $user = Auth::user();
+        $userVote = DB::table('answer_vote')
+            ->where('id_user', $user->id)
+            ->where('id_answer', $answer->id)
+            ->value('value') ?? 0;
+        return response()->json([
+            'userVote' => $userVote,
+        ]);
+    }
 }
