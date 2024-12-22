@@ -919,12 +919,6 @@ INSERT INTO Comment (id, content, date, reports, edited, id_user, id_question, i
 (34, 'startTransition API is very useful for managing transitions.', '2024-12-19', 0, FALSE, 21, NULL, 20);
 
 
-CREATE TABLE IF NOT EXISTS follow_tag (
-    id_user INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    id_tag INTEGER REFERENCES tag(id) ON DELETE CASCADE,
-    PRIMARY KEY (id_user, id_tag)
-);
-
 
 INSERT INTO follow_tag (id_user, id_tag) VALUES
 (1, 3),
