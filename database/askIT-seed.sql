@@ -874,3 +874,88 @@ INSERT INTO Answer (id, content, date, reports, votes, accepted, edited, id_user
 (49, 'Svelte is gaining popularity as a lightweight JavaScript framework.', '2024-12-07', 0, 6, FALSE, FALSE, 8, 17),
 (50, 'Next.js is a popular framework for server-side rendering in React applications.', '2024-12-08', 0, 5, FALSE, FALSE, 7, 17);
 
+
+
+INSERT INTO Comment (id, content, date, reports, edited, id_user, id_question, id_answer) VALUES
+(0, 'Try using the Arrays.sort() method for sorting in Java.', '2024-12-22', 0, FALSE, 3, 1, NULL),
+(1, 'Use functional components and hooks for better performance in React.', '2024-12-21', 0, FALSE, 4, 2, NULL),
+(2, 'C++ supports object-oriented programming, unlike C.', '2024-12-20', 0, FALSE, 5, 3, NULL),
+(3, 'Express.js is a great framework for creating REST APIs with Node.js.', '2024-12-19', 0, FALSE, 6, 4, NULL),
+(4, 'Transformers are a significant trend in NLP within machine learning.', '2024-12-18', 0, FALSE, 7, 5, NULL),
+(5, 'Start with Python and libraries like NumPy and pandas for data science.', '2024-12-17', 0, FALSE, 8, 6, NULL),
+(6, 'React 18 introduces concurrent rendering for better performance.', '2024-12-16', 0, FALSE, 9, 7, NULL),
+(7, 'Learn the basics of blockchain technology and platforms like Ethereum.', '2024-12-15', 0, FALSE, 10, 8, NULL),
+(8, 'Use Passport.js for implementing authentication in web apps.', '2024-12-14', 0, FALSE, 11, 9, NULL),
+(9, 'Use indexes to optimize SQL query performance.', '2024-12-13', 0, FALSE, 12, 10, NULL),
+(10, 'SQL databases are relational, while NoSQL databases are non-relational.', '2024-12-12', 0, FALSE, 13, 11, NULL),
+(11, 'Add the Google Analytics tracking code to your website.', '2024-12-11', 0, FALSE, 14, 12, NULL),
+(12, 'BeautifulSoup and Scrapy are popular tools for web scraping in Python.', '2024-12-10', 0, FALSE, 15, 13, NULL),
+(13, 'Use the built-in Node.js debugger for debugging applications.', '2024-12-09', 0, FALSE, 16, 14, NULL);
+
+
+INSERT INTO Comment (id, content, date, reports, edited, id_user, id_question, id_answer) VALUES
+(14, 'Arrays.sort() is indeed very useful for simple cases.', '2024-12-24', 0, FALSE, 1, NULL, 0),
+(15, 'I agree, Collections.sort() is great for lists.', '2024-12-25', 0, FALSE, 2, NULL, 1),
+(16, 'Implementing Comparator gives you more control over sorting.', '2024-12-26', 0, FALSE, 3, NULL, 2),
+
+(17, 'Functional components and hooks have made my React code much cleaner.', '2024-12-22', 0, FALSE, 4, NULL, 3),
+(18, 'Keeping components small definitely helps with maintainability.', '2024-12-23', 0, FALSE, 5, NULL, 4),
+(19, 'PropTypes have saved me from many bugs.', '2024-12-24', 0, FALSE, 6, NULL, 5),
+
+(20, 'C++ also has better support for object-oriented programming.', '2024-12-21', 0, FALSE, 7, NULL, 6),
+(21, 'Classes and inheritance in C++ make it more powerful.', '2024-12-22', 0, FALSE, 8, NULL, 7),
+(22, 'Constructors and destructors in C++ are very handy.', '2024-12-23', 0, FALSE, 9, NULL, 8),
+
+(23, 'Express.js is my go-to framework for REST APIs.', '2024-12-20', 0, FALSE, 10, NULL, 9),
+(24, 'body-parser makes handling JSON so much easier.', '2024-12-21', 0, FALSE, 11, NULL, 10),
+(25, 'Mongoose simplifies MongoDB integration a lot.', '2024-12-22', 0, FALSE, 12, NULL, 11),
+
+(26, 'Transformers have revolutionized NLP.', '2024-12-19', 0, FALSE, 13, NULL, 12),
+(27, 'Reinforcement learning is indeed very promising.', '2024-12-20', 0, FALSE, 14, NULL, 13),
+(28, 'AutoML is making machine learning more accessible.', '2024-12-21', 0, FALSE, 15, NULL, 14),
+
+(29, 'Python and its libraries are essential for data science.', '2024-12-18', 0, FALSE, 16, NULL, 15),
+(30, 'Online courses are a great way to start learning data science.', '2024-12-19', 0, FALSE, 17, NULL, 16),
+(31, 'Kaggle competitions are excellent for hands-on experience.', '2024-12-20', 0, FALSE, 18, NULL, 17),
+
+(32, 'Concurrent rendering in React 18 is a game-changer.', '2024-12-17', 0, FALSE, 19, NULL, 18),
+(33, 'Automatic batching in React 18 has improved performance.', '2024-12-18', 0, FALSE, 20, NULL, 19),
+(34, 'startTransition API is very useful for managing transitions.', '2024-12-19', 0, FALSE, 21, NULL, 20);
+
+
+INSERT INTO notification (date, viewed, id_user, id_answer, id_comment, id_question_vote, id_answer_vote) VALUES
+('2024-12-25 10:00:00', FALSE, 0, 0, NULL, NULL, NULL),
+('2024-12-26 10:00:00', FALSE, 0, 1, NULL, NULL, NULL);
+
+
+
+INSERT INTO report (content, date, viewed, id_user, id_question, id_answer, id_comment) VALUES
+('This question is unclear.', '2024-12-23', FALSE, 1, 1, NULL, NULL),
+('This question is a duplicate.', '2024-12-24', FALSE, 2, 2, NULL, NULL),
+('This answer is incorrect.', '2024-12-25', FALSE, 3, NULL, 1, NULL),
+('This answer is not helpful.', '2024-12-26', FALSE, 4, NULL, 2, NULL),
+('This comment is offensive.', '2024-12-27', FALSE, 5, NULL, NULL, 1),
+('This comment is spam.', '2024-12-28', FALSE, 6, NULL, NULL, 2);
+
+
+
+INSERT INTO question_tag (id_question, id_tag) VALUES
+(0, 3),
+(0, 10),
+(1, 1),
+(1, 10),
+(2, 11),
+(2, 10),
+(3, 5),
+(3, 6),
+(4, 12),
+(4, 10),
+(5, 13),
+(5, 14),
+(6, 15),
+(6, 16),
+(7, 17),
+(7, 18),
+(8, 19),
+(8, 20),
+(9, 10);
