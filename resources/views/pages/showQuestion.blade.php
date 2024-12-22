@@ -321,6 +321,7 @@
                             <strong class="me-1">Answered by:</strong>
                             <a href="{{ route('profile.show', $answer->user->username) }}" style="text-decoration: none;" class="me-1">{{ $answer->user->name }}</a>
                             <strong>on {{ $answer->date }}</strong>
+                            <a href="{{ route('answers.comments', $answer->id)}}" class="btn btn-outline-secondary btn-sm ms-2">Comments: {{ $answer->comments->count() }}</a>
                         </div>
 
                         
