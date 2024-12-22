@@ -2,9 +2,11 @@
 
 @section('title', $question->title)
 
+@section('content')
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
-@section('content')
+
 <div class="container my-4 answer-section">
     <div class="card mx-auto my-4" style="max-width: 900px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
         <div class="card-body">
