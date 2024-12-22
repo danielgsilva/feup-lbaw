@@ -713,7 +713,7 @@ INSERT INTO users (admin, username, name, email, bio, birthdate, password, googl
 (FALSE, 'Raulllllll', 'Raul Oliveira', 'raul.oliveira@example.com', 'Mestre em redes de computadores e segurança digital.', '1990-12-02', '$2y$10$HfzIhGCCaxqyaIdGgjARSuOKAcm1Uy82YfLuNaajn6JrjLWy9Sj/W', NULL, NULL, '2022-02-17', FALSE, 105);
 
 
-INSERT INTO tag (name, creation_date) VALUES
+INSERT INTO tag (name) VALUES
 ('java'),
 ('laravel'),
 ('python'),
@@ -732,8 +732,8 @@ INSERT INTO tag (name, creation_date) VALUES
 ('docker'),
 ('kubernetes'),
 ('git'),
-('github' ),
-('gitlab' ),
+('github'),
+('gitlab'),
 ('linux'),
 ('windows'),
 ('macos'),
@@ -765,8 +765,8 @@ INSERT INTO question (title, content, date, reports, votes, edited, id_user) VAL
 ('How to debug a Node.js application?', 'What are the best practices and tools for debugging a Node.js application?', '2024-12-08', 1, 6, FALSE, 8),
 ('What are the advantages of using Python for data analysis?', 'Can anyone discuss why Python is popular for data analysis and the libraries to use?', '2024-12-07', 0, 9, FALSE, 8),
 ('How to deploy a Django app on Heroku?', 'Can someone provide a step-by-step guide to deploying a Django application on Heroku?', '2024-12-06', 1, 8, FALSE, 9),
-('What are the top JavaScript frameworks in 2024?', 'Can anyone list the most popular JavaScript frameworks for 2024?', '2024-12-05', 0, 7, FALSE, 9);
-('How to use Python for web development?', 'I want to use Python for web development. Can someone guide me on the tools and frameworks I should learn?', '2024-12-22', 0, 20, FALSE, 10);
+('What are the top JavaScript frameworks in 2024?', 'Can anyone list the most popular JavaScript frameworks for 2024?', '2024-12-05', 0, 7, FALSE, 9),
+('How to use Python for web development?', 'I want to use Python for web development. Can someone guide me on the tools and frameworks I should learn?', '2024-12-22', 0, 20, FALSE, 10),
 ('How to implement a sorting algorithm in Java?', 'I need help implementing a sorting algorithm in Java. Any suggestions?', '2024-12-21', 1, 30, FALSE, 10),
 ('What are the best practices in React development?', 'Can anyone share some best practices when working with React?', '2024-12-20', 0, 50, FALSE, 11),
 ('What is the difference between C and C++?', 'I am learning programming and would like to understand the key differences between C and C++.', '2024-12-19', 0, 10, FALSE, 11),
@@ -806,175 +806,71 @@ INSERT INTO question (title, content, date, reports, votes, edited, id_user) VAL
 
 
 INSERT INTO Answer (id, content, date, reports, votes, accepted, edited, id_user, id_question) VALUES
-(0, 'You can implement a sorting algorithm in Java using the Arrays.sort() method for simple cases.', '2024-12-23', 0, 5, FALSE, 0, 1),
-(1, 'Consider using the Collections.sort() method for sorting lists in Java.', '2024-12-24', 0, 3, FALSE, 1, 1),
-(2, 'For custom sorting, you can implement the Comparator interface in Java.', '2024-12-25', 0, 4, FALSE, 4, 1),
+(0, 'You can implement a sorting algorithm in Java using the Arrays.sort() method for simple cases.', '2024-12-23', 0, 5, FALSE, FALSE, 0, 1),
+(1, 'Consider using the Collections.sort() method for sorting lists in Java.', '2024-12-24', 0, 3, FALSE, FALSE, 1, 1),
+(2, 'For custom sorting, you can implement the Comparator interface in Java.', '2024-12-25', 0, 4, FALSE, FALSE, 4, 1),
 
-(3, 'Use functional components and hooks in React for better performance and readability.', '2024-12-21', 0, 6, FALSE, 5, 2),
-(4, 'Keep your components small and focused on a single task in React.', '2024-12-22', 0, 7, FALSE, 0, 2),
-(5, 'Use PropTypes for type checking in React components.', '2024-12-23', 0, 5, FALSE, 7, 2),
+(3, 'Use functional components and hooks in React for better performance and readability.', '2024-12-21', 0, 6, FALSE, FALSE, 5, 2),
+(4, 'Keep your components small and focused on a single task in React.', '2024-12-22', 0, 7, FALSE, FALSE, 0, 2),
+(5, 'Use PropTypes for type checking in React components.', '2024-12-23', 0, 5, FALSE, FALSE, 7, 2),
 
-(6, 'C is a procedural programming language, while C++ supports both procedural and object-oriented programming.', '2024-12-20', 0, 8, FALSE, 0, 3),
-(7, 'C++ has features like classes, inheritance, and polymorphism which are not present in C.', '2024-12-21', 0, 9, FALSE, 0, 3),
-(8, 'Memory management in C++ is more flexible with the use of constructors and destructors.', '2024-12-22', 0, 7, FALSE, 10, 3),
+(6, 'C is a procedural programming language, while C++ supports both procedural and object-oriented programming.', '2024-12-20', 0, 8, FALSE, FALSE, 0, 3),
+(7, 'C++ has features like classes, inheritance, and polymorphism which are not present in C.', '2024-12-21', 0, 9, FALSE, FALSE, 0, 3),
+(8, 'Memory management in C++ is more flexible with the use of constructors and destructors.', '2024-12-22', 0, 7, FALSE, FALSE, 10, 3),
 
-(9, 'You can use Express.js to create a REST API in Node.js.', '2024-12-19', 0, 6, FALSE, 11, 4),
-(10, 'Use the body-parser middleware to handle JSON requests in your Node.js REST API.', '2024-12-20', 0, 5, FALSE, 12, 4),
-(11, 'Consider using Mongoose for MongoDB integration in your Node.js REST API.', '2024-12-21', 0, 4, FALSE, 13, 4),
+(9, 'You can use Express.js to create a REST API in Node.js.', '2024-12-19', 0, 6, FALSE, FALSE, 11, 4),
+(10, 'Use the body-parser middleware to handle JSON requests in your Node.js REST API.', '2024-12-20', 0, 5, FALSE, FALSE, 12, 4),
+(11, 'Consider using Mongoose for MongoDB integration in your Node.js REST API.', '2024-12-21', 0, 4, FALSE, FALSE, 13, 4),
 
-(12, 'One of the latest trends in machine learning is the use of transformers in natural language processing.', '2024-12-18', 0, 10, FALSE, 14, 5),
-(13, 'Reinforcement learning is gaining popularity in machine learning for training models in dynamic environments.', '2024-12-19', 0, 9, FALSE, 15, 5),
-(14, 'AutoML is becoming a trend, allowing non-experts to build machine learning models.', '2024-12-20', 0, 8, FALSE, 16, 5),
+(12, 'One of the latest trends in machine learning is the use of transformers in natural language processing.', '2024-12-18', 0, 10, FALSE, FALSE, 14, 5),
+(13, 'Reinforcement learning is gaining popularity in machine learning for training models in dynamic environments.', '2024-12-19', 0, 9, FALSE, FALSE, 15, 5),
+(14, 'AutoML is becoming a trend, allowing non-experts to build machine learning models.', '2024-12-20', 0, 8, FALSE, FALSE, 16, 5),
 
-(15, 'Start with learning Python and its libraries like NumPy and pandas for data science.', '2024-12-17', 0, 6, FALSE, 17, 6),
-(16, 'Take online courses on platforms like Coursera and edX to learn data science.', '2024-12-18', 0, 7, FALSE, 18, 6),
-(17, 'Practice by working on real-world data science projects and participating in competitions on Kaggle.', '2024-12-19', 0, 8, FALSE, 19, 6),
+(15, 'Start with learning Python and its libraries like NumPy and pandas for data science.', '2024-12-17', 0, 6, FALSE, FALSE, 17, 6),
+(16, 'Take online courses on platforms like Coursera and edX to learn data science.', '2024-12-18', 0, 7, FALSE, FALSE, 18, 6),
+(17, 'Practice by working on real-world data science projects and participating in competitions on Kaggle.', '2024-12-19', 0, 8, FALSE, FALSE, 19, 6),
 
-(18, 'React 18 introduces concurrent rendering for improved performance.', '2024-12-16', 0, 7, FALSE, 20, 7),
-(19, 'The new automatic batching feature in React 18 helps reduce unnecessary re-renders.', '2024-12-17', 0, 6, FALSE, 21, 7),
-(20, 'React 18 includes a new startTransition API for managing UI transitions.', '2024-12-18', 0, 5, FALSE, 22, 7),
+(18, 'React 18 introduces concurrent rendering for improved performance.', '2024-12-16', 0, 7, FALSE, FALSE, 20, 7),
+(19, 'The new automatic batching feature in React 18 helps reduce unnecessary re-renders.', '2024-12-17', 0, 6, FALSE, FALSE, 21, 7),
+(20, 'React 18 includes a new startTransition API for managing UI transitions.', '2024-12-18', 0, 5, FALSE, FALSE, 22, 7),
 
-(21, 'Start with learning the basics of blockchain technology and its underlying principles.', '2024-12-15', 0, 9, FALSE, 23, 8),
-(22, 'Learn about popular blockchain platforms like Ethereum and Hyperledger.', '2024-12-16', 0, 8, FALSE, 24, 8),
-(23, 'Practice by building simple blockchain applications and smart contracts.', '2024-12-17', 0, 7, FALSE, 25, 8),
+(21, 'Start with learning the basics of blockchain technology and its underlying principles.', '2024-12-15', 0, 9, FALSE, FALSE, 23, 8),
+(22, 'Learn about popular blockchain platforms like Ethereum and Hyperledger.', '2024-12-16', 0, 8, FALSE, FALSE, 24, 8),
+(23, 'Practice by building simple blockchain applications and smart contracts.', '2024-12-17', 0, 7, FALSE, FALSE, 25, 8),
 
-(24, 'Use libraries like Passport.js for implementing authentication in a web app.', '2024-12-14', 0, 4, FALSE, 26, 9),
-(25, 'Consider using JWT (JSON Web Tokens) for stateless authentication.', '2024-12-15', 0, 5, FALSE, 27, 9),
-(26, 'Implement multi-factor authentication for enhanced security.', '2024-12-16', 0, 6, FALSE, 28, 9),
+(24, 'Use libraries like Passport.js for implementing authentication in a web app.', '2024-12-14', 0, 4, FALSE, FALSE, 26, 9),
+(25, 'Consider using JWT (JSON Web Tokens) for stateless authentication.', '2024-12-15', 0, 5, FALSE, FALSE, 27, 9),
+(26, 'Implement multi-factor authentication for enhanced security.', '2024-12-16', 0, 6, FALSE, FALSE, 28, 9),
 
-(27, 'Use indexes to speed up query performance in SQL.', '2024-12-13', 0, 2, FALSE, 29, 10),
-(28, 'Avoid using SELECT * in your SQL queries to reduce the amount of data processed.', '2024-12-14', 0, 3, FALSE, 30, 10),
-(29, 'Use query execution plans to identify and optimize slow queries.', '2024-12-15', 0, 4, FALSE, 31, 10),
+(27, 'Use indexes to speed up query performance in SQL.', '2024-12-13', 0, 2, FALSE, FALSE, 29, 10),
+(28, 'Avoid using SELECT * in your SQL queries to reduce the amount of data processed.', '2024-12-14', 0, 3, FALSE, FALSE, 28, 10),
+(29, 'Use query execution plans to identify and optimize slow queries.', '2024-12-15', 0, 4, FALSE, FALSE, 29, 10),
 
-(30, 'SQL databases are relational, while NoSQL databases are non-relational.', '2024-12-12', 0, 5, FALSE, 32, 11),
-(31, 'NoSQL databases are more flexible and can handle unstructured data.', '2024-12-13', 0, 6, FALSE, 33, 11),
-(32, 'SQL databases use structured query language, whereas NoSQL databases use various query languages.', '2024-12-14', 0, 7, FALSE, 34, 11),
+(30, 'SQL databases are relational, while NoSQL databases are non-relational.', '2024-12-12', 0, 5, FALSE, FALSE, 27, 11),
+(31, 'NoSQL databases are more flexible and can handle unstructured data.', '2024-12-13', 0, 6, FALSE, FALSE, 26, 11),
+(32, 'SQL databases use structured query language, whereas NoSQL databases use various query languages.', '2024-12-14', 0, 7, FALSE, FALSE, 25, 11),
 
-(33, 'To integrate Google Analytics, add the tracking code to your websites HTML.', '2024-12-11', 0, 0, FALSE, 35, 12),
-(34, 'Use Google Tag Manager to manage and deploy Google Analytics tags.', '2024-12-12', 0, 1, FALSE, 36, 12),
-(35, 'Verify the integration using the Google Analytics real-time reports.', '2024-12-13', 0, 2, FALSE, 37, 12),
+(33, 'To integrate Google Analytics, add the tracking code to your websites HTML.', '2024-12-11', 0, 0, FALSE, FALSE, 24, 12),
+(34, 'Use Google Tag Manager to manage and deploy Google Analytics tags.', '2024-12-12', 0, 1, FALSE, FALSE, 23, 12),
+(35, 'Verify the integration using the Google Analytics real-time reports.', '2024-12-13', 0, 2, FALSE, FALSE, 22, 12),
 
-(36, 'BeautifulSoup and Scrapy are popular tools for web scraping in Python.', '2024-12-10', 0, 4, FALSE, 38, 13),
-(37, 'Use Puppeteer for web scraping with JavaScript.', '2024-12-11', 0, 3, FALSE, 39, 13),
-(38, 'Selenium is a powerful tool for web scraping and browser automation.', '2024-12-12', 0, 5, FALSE, 40, 13),
+(36, 'BeautifulSoup and Scrapy are popular tools for web scraping in Python.', '2024-12-10', 0, 4, FALSE, FALSE, 21, 13),
+(37, 'Use Puppeteer for web scraping with JavaScript.', '2024-12-11', 0, 3, FALSE, FALSE, 20, 13),
+(38, 'Selenium is a powerful tool for web scraping and browser automation.', '2024-12-12', 0, 5, FALSE, FALSE, 19, 13),
 
-(39, 'Use the built-in Node.js debugger for debugging applications.', '2024-12-09', 0, 6, FALSE, 41, 14),
-(40, 'Consider using VS Code with the Node.js extension for an enhanced debugging experience.', '2024-12-10', 0, 5, FALSE, 42, 14),
-(41, 'Use logging libraries like Winston to track and debug issues in Node.js applications.', '2024-12-11', 0, 4, FALSE, 43, 14),
+(39, 'Use the built-in Node.js debugger for debugging applications.', '2024-12-09', 0, 6, FALSE, FALSE, 18, 14),
+(40, 'Consider using VS Code with the Node.js extension for an enhanced debugging experience.', '2024-12-10', 0, 5, FALSE, FALSE, 17, 14),
+(41, 'Use logging libraries like Winston to track and debug issues in Node.js applications.', '2024-12-11', 0, 4, FALSE, FALSE, 16, 14),
 
-(42, 'Python is popular for data analysis due to its simplicity and readability.', '2024-12-08', 0, 9, FALSE, 44, 15),
-(43, 'Libraries like pandas and NumPy make data manipulation and analysis easy in Python.', '2024-12-09', 0, 8, FALSE, 45, 15),
-(44, 'Python has a large community and extensive documentation for data analysis.', '2024-12-10', 0, 7, FALSE, 46, 15),
+(42, 'Python is popular for data analysis due to its simplicity and readability.', '2024-12-08', 0, 9, FALSE, FALSE, 15, 15),
+(43, 'Libraries like pandas and NumPy make data manipulation and analysis easy in Python.', '2024-12-09', 0, 8, FALSE, FALSE, 14, 15),
+(44, 'Python has a large community and extensive documentation for data analysis.', '2024-12-10', 0, 7, FALSE, FALSE, 13, 15),
 
-(45, 'To deploy a Django app on Heroku, start by creating a Procfile.', '2024-12-07', 0, 8, FALSE, 47, 16),
-(46, 'Use the Heroku CLI to deploy your Django application.', '2024-12-08', 0, 7, FALSE, 48, 16),
-(47, 'Configure your Django settings for Heroku deployment, including the database and static files.', '2024-12-09', 0, 6, FALSE, 49, 16),
+(45, 'To deploy a Django app on Heroku, start by creating a Procfile.', '2024-12-07', 0, 8, FALSE, FALSE, 12, 16),
+(46, 'Use the Heroku CLI to deploy your Django application.', '2024-12-08', 0, 7, FALSE, FALSE, 11, 16),
+(47, 'Configure your Django settings for Heroku deployment, including the database and static files.', '2024-12-09', 0, 6, FALSE, FALSE, 10, 16),
 
-(48, 'React, Angular, and Vue.js are among the top JavaScript frameworks in 2024.', '2024-12-06', 0, 7, FALSE, 50, 17),
-(49, 'Svelte is gaining popularity as a lightweight JavaScript framework.', '2024-12-07', 0, 6, FALSE, 51, 17),
-(50, 'Next.js is a popular framework for server-side rendering in React applications.', '2024-12-08', 0, 5, FALSE, 52, 17);
-
-
-INSERT INTO Comment (id, content, date, reports, edited, id_user, id_question, id_answer) VALUES
-(0, 'Try using the Arrays.sort() method for sorting in Java.', '2024-12-22', 0, FALSE, 3, 1, NULL),
-(1, 'Use functional components and hooks for better performance in React.', '2024-12-21', 0, FALSE, 4, 2, NULL),
-(2, 'C++ supports object-oriented programming, unlike C.', '2024-12-20', 0, FALSE, 5, 3, NULL),
-(3, 'Express.js is a great framework for creating REST APIs with Node.js.', '2024-12-19', 0, FALSE, 6, 4, NULL),
-(4, 'Transformers are a significant trend in NLP within machine learning.', '2024-12-18', 0, FALSE, 7, 5, NULL),
-(5, 'Start with Python and libraries like NumPy and pandas for data science.', '2024-12-17', 0, FALSE, 8, 6, NULL),
-(6, 'React 18 introduces concurrent rendering for better performance.', '2024-12-16', 0, FALSE, 9, 7, NULL),
-(7, 'Learn the basics of blockchain technology and platforms like Ethereum.', '2024-12-15', 0, FALSE, 10, 8, NULL),
-(8, 'Use Passport.js for implementing authentication in web apps.', '2024-12-14', 0, FALSE, 11, 9, NULL),
-(9, 'Use indexes to optimize SQL query performance.', '2024-12-13', 0, FALSE, 12, 10, NULL),
-(10, 'SQL databases are relational, while NoSQL databases are non-relational.', '2024-12-12', 0, FALSE, 13, 11, NULL),
-(11, 'Add the Google Analytics tracking code to your website.', '2024-12-11', 0, FALSE, 14, 12, NULL),
-(12, 'BeautifulSoup and Scrapy are popular tools for web scraping in Python.', '2024-12-10', 0, FALSE, 15, 13, NULL),
-(13, 'Use the built-in Node.js debugger for debugging applications.', '2024-12-09', 0, FALSE, 16, 14, NULL);
-
-
-INSERT INTO Comment (id, content, date, reports, edited, id_user, id_question, id_answer) VALUES
-(14, 'Arrays.sort() is indeed very useful for simple cases.', '2024-12-24', 0, FALSE, 1, NULL, 0),
-(15, 'I agree, Collections.sort() is great for lists.', '2024-12-25', 0, FALSE, 2, NULL, 1),
-(16, 'Implementing Comparator gives you more control over sorting.', '2024-12-26', 0, FALSE, 3, NULL, 2),
-
-(17, 'Functional components and hooks have made my React code much cleaner.', '2024-12-22', 0, FALSE, 4, NULL, 3),
-(18, 'Keeping components small definitely helps with maintainability.', '2024-12-23', 0, FALSE, 5, NULL, 4),
-(19, 'PropTypes have saved me from many bugs.', '2024-12-24', 0, FALSE, 6, NULL, 5),
-
-(20, 'C++ also has better support for object-oriented programming.', '2024-12-21', 0, FALSE, 7, NULL, 6),
-(21, 'Classes and inheritance in C++ make it more powerful.', '2024-12-22', 0, FALSE, 8, NULL, 7),
-(22, 'Constructors and destructors in C++ are very handy.', '2024-12-23', 0, FALSE, 9, NULL, 8),
-
-(23, 'Express.js is my go-to framework for REST APIs.', '2024-12-20', 0, FALSE, 10, NULL, 9),
-(24, 'body-parser makes handling JSON so much easier.', '2024-12-21', 0, FALSE, 11, NULL, 10),
-(25, 'Mongoose simplifies MongoDB integration a lot.', '2024-12-22', 0, FALSE, 12, NULL, 11),
-
-(26, 'Transformers have revolutionized NLP.', '2024-12-19', 0, FALSE, 13, NULL, 12),
-(27, 'Reinforcement learning is indeed very promising.', '2024-12-20', 0, FALSE, 14, NULL, 13),
-(28, 'AutoML is making machine learning more accessible.', '2024-12-21', 0, FALSE, 15, NULL, 14),
-
-(29, 'Python and its libraries are essential for data science.', '2024-12-18', 0, FALSE, 16, NULL, 15),
-(30, 'Online courses are a great way to start learning data science.', '2024-12-19', 0, FALSE, 17, NULL, 16),
-(31, 'Kaggle competitions are excellent for hands-on experience.', '2024-12-20', 0, FALSE, 18, NULL, 17),
-
-(32, 'Concurrent rendering in React 18 is a game-changer.', '2024-12-17', 0, FALSE, 19, NULL, 18),
-(33, 'Automatic batching in React 18 has improved performance.', '2024-12-18', 0, FALSE, 20, NULL, 19),
-(34, 'startTransition API is very useful for managing transitions.', '2024-12-19', 0, FALSE, 21, NULL, 20)
-
-
-INSERT INTO notification (date, viewed, id_user, id_answer, id_comment, id_question_vote, id_answer_vote) VALUES
-('2024-12-25 10:00:00', FALSE, 0, 0, NULL, NULL, NULL),
-('2024-12-26 10:00:00', FALSE, 0, 1, NULL, NULL, NULL),
-
-
-
-CREATE TABLE IF NOT EXISTS report (
-    id SERIAL PRIMARY KEY,
-    content TEXT NOT NULL,
-    date DATE DEFAULT CURRENT_DATE NOT NULL,
-    viewed BOOLEAN DEFAULT FALSE NOT NULL,
-    id_user INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    id_question INTEGER REFERENCES question(id) ON DELETE CASCADE,
-    id_answer INTEGER REFERENCES Answer(id) ON DELETE CASCADE,
-    id_comment INTEGER REFERENCES Comment(id) ON DELETE CASCADE,
-    CONSTRAINT valid_report CHECK ((id_question IS NOT NULL AND id_answer IS NULL AND id_comment IS NULL) OR (id_question IS NULL AND id_answer IS NOT NULL AND id_comment IS NULL) OR (id_question IS NULL AND id_answer IS NULL AND id_comment IS NOT NULL))
-);
-
-
-INSERT INTO report (content, date, viewed, id_user, id_question, id_answer, id_comment) VALUES
-('This question is unclear.', '2024-12-23', FALSE, 1, 1, NULL, NULL),
-('This question is a duplicate.', '2024-12-24', FALSE, 2, 2, NULL, NULL),
-('This answer is incorrect.', '2024-12-25', FALSE, 3, NULL, 1, NULL),
-('This answer is not helpful.', '2024-12-26', FALSE, 4, NULL, 2, NULL),
-('This comment is offensive.', '2024-12-27', FALSE, 5, NULL, NULL, 1),
-('This comment is spam.', '2024-12-28', FALSE, 6, NULL, NULL, 2);
-
-
-CREATE TABLE IF NOT EXISTS question_tag (
-    id_question INTEGER REFERENCES question(id) ON DELETE CASCADE,
-    id_tag INTEGER REFERENCES tag(id) ON DELETE CASCADE,
-    PRIMARY KEY (id_question, id_tag)
-);
-
-
-INSERT INTO question_tag (id_question, id_tag) VALUES
-(0, 3),
-(0, 10),
-(1, 1),
-(1, 10),
-(2, 11),
-(2, 10),
-(3, 5),
-(3, 6),
-(4, 12),
-(4, 10),
-(5, 13),
-(5, 14),
-(6, 15),
-(6, 16),
-(7, 17),
-(7, 18),
-(8, 19),
-(8, 20),
-(9, 10);
+(48, 'React, Angular, and Vue.js are among the top JavaScript frameworks in 2024.', '2024-12-06', 0, 7, FALSE, FALSE, 9, 17),
+(49, 'Svelte is gaining popularity as a lightweight JavaScript framework.', '2024-12-07', 0, 6, FALSE, FALSE, 8, 17),
+(50, 'Next.js is a popular framework for server-side rendering in React applications.', '2024-12-08', 0, 5, FALSE, FALSE, 7, 17);
 
