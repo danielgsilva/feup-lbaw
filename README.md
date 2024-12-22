@@ -14,10 +14,11 @@ Creating a space where developers can quickly find accurate, reliable answers to
 
 ### Installation
 
-> Link to the release with the final version of the source code in the group's Git repository.
+Here is our final product link:
 
-Docker command to start the image:
+[Final Product](https://gitlab.up.pt/lbaw/lbaw2425/lbaw24141/-/tree/PA?ref_type=tags)
 
+And here the docker command to start the image:
 docker run -d --name lbaw24141 -p 8001:80 gitlab.up.pt:5050/lbaw/lbaw2425/lbaw24141
 
 ### Usage
