@@ -7,6 +7,7 @@ use App\Models\Comment;
 use App\Models\Question;
 use App\Models\Answer;
 use Illuminate\Support\Facades\Auth;
+use App\Events\SendNotification;
 
 class CommentController extends Controller
 {
@@ -28,7 +29,12 @@ class CommentController extends Controller
         $comment->id_question = $request->input('id_question');
         $comment->id_answer = $request->input('id_answer');
         $comment->save();
-
+        if($comment->id_answer == null){
+            event(new SendNotification('There is a new comment to your question.', Question::find($comment->id_question)->id_user, $comment->id_question, null, false));
+        } else {
+            event(new SendNotification('There is a new comment to your answer.', Answer::find($comment->id_answer)->id_user, $comment->id_question, $comment->id_answer, false));
+        }
+        
         return redirect()->back()->with('success', 'Your comment has been posted.');
     }
 
