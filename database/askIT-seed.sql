@@ -743,65 +743,62 @@ INSERT INTO tag (name) VALUES
 
 
 
--- Questão com id = 0
-INSERT INTO question (id, title, content, date, reports, votes, edited, id_user) VALUES
-(0, 'How to use Python for web development?', 'I want to use Python for web development. Can someone guide me on the tools and frameworks I should learn?', '2024-12-22', 0, 0, FALSE, 0);
 
--- Perguntas para os outros utilizadores
+-- Question with id = 0
+INSERT INTO question (id, title, content, date, reports, votes, edited, id_user) VALUES
+(0, 'What tools and frameworks should I study for Python web development?', 'I am planning to use Python for web development. What are the essential tools and frameworks to focus on?', '2024-12-22', 0, 20, FALSE, 0);
+
+-- Additional questions
 INSERT INTO question (title, content, date, reports, votes, edited, id_user) VALUES
-('How to implement a sorting algorithm in Java?', 'I need help implementing a sorting algorithm in Java. Any suggestions?', '2024-12-21', 1, 3, FALSE, 0),
-('What are the best practices in React development?', 'Can anyone share some best practices when working with React?', '2024-12-20', 0, 5, FALSE, 1),
-('What is the difference between C and C++?', 'I am learning programming and would like to understand the key differences between C and C++.', '2024-12-19', 0, 8, FALSE, 2),
-('How to create a REST API using Node.js?', 'I am trying to create a REST API with Node.js. Can someone provide an example?', '2024-12-18', 1, 4, FALSE, 3),
-('What are the latest trends in machine learning?', 'Can anyone discuss the latest trends and advancements in machine learning?', '2024-12-17', 0, 10, FALSE, 3),
-('What is the best way to learn data science?', 'Can anyone recommend the best approach to learn data science from scratch?', '2024-12-16', 1, 6, FALSE, 4),
-('What are the top features of React 18?', 'What are the new features introduced in React 18? How do they impact development?', '2024-12-15', 0, 7, FALSE, 4),
-('How do I start with Blockchain development?', 'I am interested in learning Blockchain development. Where should I start?', '2024-12-14', 1, 9, FALSE, 5),
-('What is the best way to implement authentication in a web app?', 'Can someone explain the best approach to implement secure user authentication in a web application?', '2024-12-13', 0, 3, FALSE, 5),
-('How to optimize SQL queries?', 'What are some tips for optimizing SQL queries and improving performance?', '2024-12-12', 0, 2, FALSE, 6),
-('What are the main differences between SQL and NoSQL databases?', 'Can anyone explain the key differences between SQL and NoSQL databases?', '2024-12-11', 0, 5, FALSE, 6),
-('How to integrate Google Analytics in a website?', 'Can anyone explain how to integrate Google Analytics into a website?', '2024-12-10', 0, 0, FALSE, 7),
-('What are the best tools for web scraping?', 'Can anyone suggest the best tools and frameworks for web scraping?', '2024-12-09', 0, 4, FALSE, 7),
-('How to debug a Node.js application?', 'What are the best practices and tools for debugging a Node.js application?', '2024-12-08', 1, 6, FALSE, 8),
-('What are the advantages of using Python for data analysis?', 'Can anyone discuss why Python is popular for data analysis and the libraries to use?', '2024-12-07', 0, 9, FALSE, 8),
-('How to deploy a Django app on Heroku?', 'Can someone provide a step-by-step guide to deploying a Django application on Heroku?', '2024-12-06', 1, 8, FALSE, 9),
-('What are the top JavaScript frameworks in 2024?', 'Can anyone list the most popular JavaScript frameworks for 2024?', '2024-12-05', 0, 7, FALSE, 9),
-('How to use Python for web development?', 'I want to use Python for web development. Can someone guide me on the tools and frameworks I should learn?', '2024-12-22', 0, 20, FALSE, 10),
-('How to implement a sorting algorithm in Java?', 'I need help implementing a sorting algorithm in Java. Any suggestions?', '2024-12-21', 1, 30, FALSE, 10),
-('What are the best practices in React development?', 'Can anyone share some best practices when working with React?', '2024-12-20', 0, 50, FALSE, 11),
-('What is the difference between C and C++?', 'I am learning programming and would like to understand the key differences between C and C++.', '2024-12-19', 0, 10, FALSE, 11),
-('How to create a REST API using Node.js?', 'I am trying to create a REST API with Node.js. Can someone provide an example?', '2024-12-18', 1, 5, FALSE, 12),
-('What are the latest trends in machine learning?', 'Can anyone discuss the latest trends and advancements in machine learning?', '2024-12-17', 0, 8, FALSE, 12),
-('What is the best way to learn data science?', 'Can anyone recommend the best approach to learn data science from scratch?', '2024-12-16', 1, 7, FALSE, 13),
-('What are the top features of React 18?', 'What are the new features introduced in React 18? How do they impact development?', '2024-12-15', 0, 6, FALSE, 13),
-('How do I start with Blockchain development?', 'I am interested in learning Blockchain development. Where should I start?', '2024-12-14', 1, 9, FALSE, 14),
-('What is the best way to implement authentication in a web app?', 'Can someone explain the best approach to implement secure user authentication in a web application?', '2024-12-13', 0, 4, FALSE, 14),
-('How to optimize SQL queries?', 'What are some tips for optimizing SQL queries and improving performance?', '2024-12-12', 0, 2, FALSE, 15),
-('What are the main differences between SQL and NoSQL databases?', 'Can anyone explain the key differences between SQL and NoSQL databases?', '2024-12-11', 0, 5, FALSE, 15),
-('How to integrate Google Analytics in a website?', 'Can anyone explain how to integrate Google Analytics into a website?', '2024-12-10', 0, 0, FALSE, 16),
-('What are the best tools for web scraping?', 'Can anyone suggest the best tools and frameworks for web scraping?', '2024-12-09', 0, 3, FALSE, 16),
-('How to debug a Node.js application?', 'What are the best practices and tools for debugging a Node.js application?', '2024-12-08', 1, 6, FALSE, 17),
-('What are the advantages of using Python for data analysis?', 'Can anyone discuss why Python is popular for data analysis and the libraries to use?', '2024-12-07', 0, 7, FALSE, 17),
-('How to deploy a Django app on Heroku?', 'Can someone provide a step-by-step guide to deploying a Django application on Heroku?', '2024-12-06', 1, 8, FALSE, 18),
-('What are the top JavaScript frameworks in 2024?', 'Can anyone list the most popular JavaScript frameworks for 2024?', '2024-12-05', 0, 5, FALSE, 18),
-('How to use Python for web development?', 'I want to use Python for web development. Can someone guide me on the tools and frameworks I should learn?', '2024-12-22', 0, 20, FALSE, 19),
-('How to implement a sorting algorithm in Java?', 'I need help implementing a sorting algorithm in Java. Any suggestions?', '2024-12-21', 1, 30, FALSE, 19),
-('What are the best practices in React development?', 'Can anyone share some best practices when working with React?', '2024-12-20', 0, 50, FALSE, 20),
-('What is the difference between C and C++?', 'I am learning programming and would like to understand the key differences between C and C++.', '2024-12-19', 0, 10, FALSE, 20),
-('How to create a REST API using Node.js?', 'I am trying to create a REST API with Node.js. Can someone provide an example?', '2024-12-18', 1, 5, FALSE, 21),
-('What are the latest trends in machine learning?', 'Can anyone discuss the latest trends and advancements in machine learning?', '2024-12-17', 0, 8, FALSE, 21),
-('What is the best way to learn data science?', 'Can anyone recommend the best approach to learn data science from scratch?', '2024-12-16', 1, 7, FALSE, 22),
-('What are the top features of React 18?', 'What are the new features introduced in React 18? How do they impact development?', '2024-12-15', 0, 6, FALSE, 22),
-('How do I start with Blockchain development?', 'I am interested in learning Blockchain development. Where should I start?', '2024-12-14', 1, 9, FALSE, 23),
-('What is the best way to implement authentication in a web app?', 'Can someone explain the best approach to implement secure user authentication in a web application?', '2024-12-13', 0, 4, FALSE, 23),
-('How to optimize SQL queries?', 'What are some tips for optimizing SQL queries and improving performance?', '2024-12-12', 0, 2, FALSE, 24),
-('What are the main differences between SQL and NoSQL databases?', 'Can anyone explain the key differences between SQL and NoSQL databases?', '2024-12-11', 0, 5, FALSE, 24),
-('How to integrate Google Analytics in a website?', 'Can anyone explain how to integrate Google Analytics into a website?', '2024-12-10', 0, 0, FALSE, 25),
-('What are the best tools for web scraping?', 'Can anyone suggest the best tools and frameworks for web scraping?', '2024-12-09', 0, 3, FALSE, 25),
-('How to debug a Node.js application?', 'What are the best practices and tools for debugging a Node.js application?', '2024-12-08', 1, 6, FALSE, 26),
-('What are the advantages of using Python for data analysis?', 'Can anyone discuss why Python is popular for data analysis and the libraries to use?', '2024-12-07', 0, 7, FALSE, 26),
-('How to deploy a Django app on Heroku?', 'Can someone provide a step-by-step guide to deploying a Django application on Heroku?', '2024-12-06', 1, 8, FALSE, 27),
-('What are the top JavaScript frameworks in 2024?', 'Can anyone list the most popular JavaScript frameworks for 2024?', '2024-12-05', 0, 5, FALSE, 27);
+('How can I implement a sorting algorithm in Java?', 'I am looking for guidance on how to implement a sorting algorithm in Java. Any tips or approaches?', '2024-12-21', 1, 50, FALSE, 0),
+('What are effective debugging techniques for React?', 'Are there specific techniques that can help debug React applications efficiently?', '2024-12-20', 0, 40, FALSE, 1),
+('What distinguishes C from C++ in terms of memory management?', 'I want to understand how memory management differs between C and C++. Can someone explain?', '2024-12-19', 0, 30, FALSE, 2),
+('How do I create a REST API in Node.js step by step?', 'Could someone guide me on creating a REST API using Node.js?', '2024-12-18', 1, 20, FALSE, 3),
+('What trends are reshaping machine learning in 2024?', 'What are some trends in machine learning that could shape its future?', '2024-12-17', 0, 29, FALSE, 3),
+('What’s the best roadmap for learning data science?', 'Can someone outline a roadmap for learning data science effectively?', '2024-12-16', 1, 49, FALSE, 4),
+('What are the highlights of React 18 for developers?', 'Which features of React 18 are most beneficial for developers?', '2024-12-15', 0, 51, FALSE, 4),
+('How do I start developing Blockchain applications?', 'Are there beginner-friendly guides for getting started with Blockchain development?', '2024-12-14', 1, 40, FALSE, 5),
+('What are best practices for secure user authentication?', 'Could someone elaborate on best practices for implementing secure user authentication?', '2024-12-13', 0, 31, FALSE, 5),
+('How can I write optimized SQL queries?', 'What are some proven techniques for writing optimized SQL queries?', '2024-12-12', 0, 2, FALSE, 6),
+('SQL vs NoSQL: When to use each?', 'In what scenarios should I prefer SQL over NoSQL or vice versa?', '2024-12-11', 0, 5, FALSE, 6),
+('How do I integrate Google Analytics with a CMS?', 'What steps are required to integrate Google Analytics with a CMS?', '2024-12-10', 0, 0, FALSE, 7),
+('What libraries are best for web scraping in Python?', 'Can someone recommend Python libraries for web scraping?', '2024-12-09', 0, 4, FALSE, 7),
+('What are advanced debugging tools for Node.js?', 'Could someone share insights on debugging tools for advanced Node.js projects?', '2024-12-08', 1, 6, FALSE, 8),
+('Why is Python preferred for big data analysis?', 'What makes Python a popular choice for big data analysis?', '2024-12-07', 0, 9, FALSE, 8),
+('How do I deploy a Django project on AWS?', 'Can anyone explain how to deploy Django projects on AWS?', '2024-12-06', 1, 8, FALSE, 9),
+('What are the leading JavaScript frameworks for beginners?', 'What JavaScript frameworks should beginners start with in 2024?', '2024-12-05', 0, 7, FALSE, 9),
+('How do I implement a quicksort algorithm in Java?', 'What are the steps to write a quicksort algorithm in Java?', '2024-12-21', 1, 30, FALSE, 10),
+('What’s the latest in React development for 2024?', 'What are some exciting updates in React development for 2024?', '2024-12-20', 0, 50, FALSE, 11),
+('What are the key distinctions between C++ and Python?', 'Can someone compare C++ and Python in terms of performance and usability?', '2024-12-19', 0, 10, FALSE, 11),
+('How do I design scalable REST APIs in Node.js?', 'What are best practices for designing scalable REST APIs with Node.js?', '2024-12-18', 1, 5, FALSE, 12),
+('What recent breakthroughs are driving AI innovation?', 'Can someone share insights into recent breakthroughs in artificial intelligence?', '2024-12-17', 0, 8, FALSE, 12),
+('How do I transition to a career in data science?', 'What steps can I take to switch to a data science career?', '2024-12-16', 1, 7, FALSE, 13),
+('What are the game-changing features in React 18?', 'Which features of React 18 significantly impact web development?', '2024-12-15', 0, 6, FALSE, 13),
+('What’s a beginner’s guide to Blockchain?', 'Are there any comprehensive beginner guides to Blockchain development?', '2024-12-14', 1, 9, FALSE, 14),
+('How do I secure web app authentication with OAuth?', 'Can someone explain how to implement OAuth for secure authentication?', '2024-12-13', 0, 4, FALSE, 14),
+('How to optimize joins in SQL for large datasets?', 'What techniques can I use to optimize SQL joins for large datasets?', '2024-12-12', 0, 2, FALSE, 15),
+('What’s the best use case for NoSQL databases?', 'Can someone provide examples of when NoSQL databases are more suitable than SQL?', '2024-12-11', 0, 5, FALSE, 15),
+('How do I set up Google Analytics 4?', 'Could someone guide me on setting up Google Analytics 4?', '2024-12-10', 0, 0, FALSE, 16),
+('What frameworks simplify web scraping tasks?', 'What frameworks or libraries are best for simplifying web scraping tasks?', '2024-12-09', 0, 3, FALSE, 16),
+('What are common pitfalls in Node.js debugging?', 'What pitfalls should I avoid when debugging Node.js applications?', '2024-12-08', 1, 6, FALSE, 17),
+('Why choose Python for machine learning?', 'What makes Python a better choice for machine learning compared to other languages?', '2024-12-07', 0, 7, FALSE, 17),
+('How do I host Django apps on Azure?', 'Could someone explain the steps to host Django apps on Microsoft Azure?', '2024-12-06', 1, 8, FALSE, 18),
+('What’s trending in JavaScript frameworks for 2024?', 'What are the latest JavaScript frameworks gaining popularity in 2024?', '2024-12-05', 0, 5, FALSE, 18),
+('What techniques improve sorting algorithms?', 'Are there any advanced techniques to enhance sorting algorithms?', '2024-12-21', 0, 10, FALSE, 19),
+('What new libraries are available for React in 2024?', 'Could someone share the latest libraries for improving React development?', '2024-12-20', 0, 15, FALSE, 20),
+('How do I handle memory leaks in C++?', 'What are effective ways to detect and fix memory leaks in C++?', '2024-12-19', 1, 10, FALSE, 21),
+('What’s the best tool for API testing in Node.js?', 'Could someone recommend tools for testing APIs developed in Node.js?', '2024-12-18', 0, 8, FALSE, 22),
+('What’s the role of transformers in machine learning?', 'Can someone explain the significance of transformers in modern machine learning?', '2024-12-17', 1, 10, FALSE, 23),
+('What are the best text editors for developers?', 'Could someone recommend the most efficient text editors for developers and explain their advantages?', '2024-12-04', 0, 3, FALSE, 19),
+('How do I structure a backend application with microservices?', 'What are the best practices for structuring a backend application using microservices?', '2024-12-03', 0, 5, FALSE, 19),
+('What is the difference between authentication and authorization?', 'Can someone explain the fundamental differences between authentication and authorization?', '2024-12-02', 0, 4, FALSE, 20),
+('How can I create a responsive design for websites?', 'I want to learn how to create fully responsive websites. Any suggestions?', '2024-12-01', 1, 6, FALSE, 20),
+('What are the benefits of TypeScript over JavaScript?', 'Why should I consider using TypeScript instead of JavaScript? What are its main advantages?', '2024-11-30', 0, 7, FALSE, 21),
+('How can I implement automated testing in web projects?', 'What are the recommended tools for implementing automated testing in web applications?', '2024-11-29', 1, 5, FALSE, 21),
+('How can I optimize image loading on websites?', 'Could someone share strategies for improving image loading performance on websites?', '2024-11-28', 0, 6, FALSE, 22),
+('What are the key differences between functional and object-oriented programming?', 'Can someone explain the main distinctions between functional programming and object-oriented programming?', '2024-11-27', 0, 5, FALSE, 22),
+('How do I set up continuous integration for my project?', 'What are the steps required to set up continuous integration, and what tools should I use?', '2024-11-26', 0, 4, FALSE, 23),
+('What are the best practices for securing REST APIs?', 'Could someone provide an overview of the best practices for securing REST APIs?', '2024-11-25', 1, 8, FALSE, 23);
 
 
 
@@ -875,7 +872,6 @@ INSERT INTO Answer (id, content, date, reports, votes, accepted, edited, id_user
 (50, 'Next.js is a popular framework for server-side rendering in React applications.', '2024-12-08', 0, 5, FALSE, FALSE, 7, 17);
 
 
-
 INSERT INTO Comment (id, content, date, reports, edited, id_user, id_question, id_answer) VALUES
 (0, 'Try using the Arrays.sort() method for sorting in Java.', '2024-12-22', 0, FALSE, 3, 1, NULL),
 (1, 'Use functional components and hooks for better performance in React.', '2024-12-21', 0, FALSE, 4, 2, NULL),
@@ -923,9 +919,34 @@ INSERT INTO Comment (id, content, date, reports, edited, id_user, id_question, i
 (34, 'startTransition API is very useful for managing transitions.', '2024-12-19', 0, FALSE, 21, NULL, 20);
 
 
-INSERT INTO notification (date, viewed, id_user, id_answer, id_comment, id_question_vote, id_answer_vote) VALUES
-('2024-12-25 10:00:00', FALSE, 0, 0, NULL, NULL, NULL),
-('2024-12-26 10:00:00', FALSE, 0, 1, NULL, NULL, NULL);
+CREATE TABLE IF NOT EXISTS follow_tag (
+    id_user INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    id_tag INTEGER REFERENCES tag(id) ON DELETE CASCADE,
+    PRIMARY KEY (id_user, id_tag)
+);
+
+
+INSERT INTO follow_tag (id_user, id_tag) VALUES
+(1, 3),
+(1, 5),
+(2, 7),
+(2, 9),
+(3, 11),
+(3, 13),
+(4, 15),
+(4, 17),
+(5, 19),
+(5, 21),
+(6, 23),
+(6, 25),
+(7, 2),
+(7, 4),
+(8, 6),
+(8, 8),
+(9, 10),
+(9, 12),
+(10, 14),
+(10, 16);
 
 
 
@@ -958,4 +979,55 @@ INSERT INTO question_tag (id_question, id_tag) VALUES
 (7, 18),
 (8, 19),
 (8, 20),
-(9, 10);
+(9, 10),
+(9, 11),
+(10, 10),
+(10, 11),
+(11, 10),
+(11, 14),
+(12, 21),
+(12, 22),
+(13, 3),
+(13, 10),
+(14, 12),
+(14, 10),
+(15, 3),
+(15, 10),
+(16, 17),
+(16, 18),
+(17, 19),
+(17, 20),
+(18, 10),
+(18, 11),
+(19, 5),
+(19, 6),
+(20, 12),
+(20, 10),
+(21, 13),
+(21, 14),
+(22, 15),
+(22, 16),
+(23, 17),
+(23, 18),
+(24, 19),
+(24, 20),
+(25, 10),
+(25, 11),
+(26, 10),
+(26, 11),
+(27, 21),
+(27, 22),
+(28, 3),
+(28, 10),
+(29, 12),
+(29, 10),
+(30, 3),
+(30, 10),
+(31, 17),
+(31, 18),
+(32, 19),
+(32, 20),
+(33, 10),
+(33, 11),
+(34, 10),
+(34, 11);
