@@ -237,10 +237,18 @@
                 <input type="hidden" class="answer-id" value="{{$answer->id}}">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
-                        <div class="flex-grow-1">
-                            <p class="card-text m-0">{{ $answer->content }}</p>
-                        </div>
+                    <div class="d-flex align-items-center flex-grow-1">
+                        <p class="card-text m-0">{{ $answer->content }}</p>
 
+                        <div class="accepted-icon-{{$answer->id}} ms-2">
+                            @if ($answer->accepted)
+                                <i class="fa-solid fa-check"></i>
+                            @endif
+                        </div>
+                    </div>
+                       
+                        
+                        
                         <div class="dropdown">
                             <button class="btn btn-light btn-sm" type="button" id="answerActionsDropdown-{{ $answer->id }}" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-three-dots-vertical"></i>
@@ -263,6 +271,16 @@
                                         </form>
                                     </li>
                                 @endif
+                                <div>
+                                    @can('accept', $answer)
+                                        @if ($answer->accepted)
+                                            <button class="mark-accepted btn btn-link mark-accepted-{{$answer->id}}" type="submit" style = "text-decoration: none; color: black;">Unmark as accepted</button>
+                                        @else
+                                            <button class="mark-accepted btn btn-link mark-accepted-{{$answer->id}}" type="submit" style = "text-decoration: none; color: black;">Mark as accepted</button>
+                                        @endif
+                                    @endcan
+                                </div>
+
                             </ul>
                         </div>
                     </div>
@@ -277,6 +295,7 @@
                             <strong>on {{ $answer->date }}</strong>
                         </div>
 
+                        
                         <div class="d-flex align-items-center">
                             <button id="like-answer-{{ $answer->id }}" 
                                     class="btn btn-outline-success btn-sm me-2
@@ -293,21 +312,6 @@
                             <span class="badge bg-secondary" id="vote-answer-{{ $answer->id }}">Votes: {{ $answer->votes }}</span>
                         </div>
 
-                        <div>
-                            @can('accept', $answer)
-                                @if ($answer->accepted)
-                                    <button class="mark-accepted btn btn-link mark-accepted-{{$answer->id}}" type="submit">Unmark as accepted</button>
-                                @else
-                                    <button class="mark-accepted btn btn-link mark-accepted-{{$answer->id}}" type="submit">Mark as accepted</button>
-                                @endif
-                            @endcan
-                        </div>
-
-                        <div class="accepted-icon-{{$answer->id}}">
-                            @if ($answer->accepted)
-                                <i class="fa-solid fa-check"></i>
-                            @endif
-                        </div>
                     </div>
                 </div>
             </div>

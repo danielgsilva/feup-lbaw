@@ -9,17 +9,17 @@ class HomeController extends Controller
     
     public function index(Request $request)
     {
-        $order = $request->query('order', 'votes'); // Default order by votes
-        $tagIds = $request->query('tag_id', []); // Get tag IDs as an array if provided
+        $order = $request->query('order', 'votes');
+        $tagIds = $request->query('tag_id', []); 
 
-        // Fetch all tags for the dropdown
+        
         $tags = Tag::all();
 
-        // Query questions, filtering by tags with AND logic
+        
         $questions = Question::when(!empty($tagIds), function ($query) use ($tagIds) {
             foreach ($tagIds as $tagId) {
-                $query->whereHas('tags', function ($subQuery) use ($tagId) {
-                    $subQuery->where('tag.id', $tagId);
+                $query->whereHas('tags', function ($subQuery) use ($tagIds) {
+                    $subQuery->whereIn('tag.id', $tagIds);
                 });
             }
         })
