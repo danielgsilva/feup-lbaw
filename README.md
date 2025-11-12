@@ -1,6 +1,8 @@
-# AskIT
+# AskIT (Collaborative Q&A)
 
-Creating a space where developers can quickly find accurate, reliable answers to their coding questions. What sets it apart is the community-driven approach, where users contribute their expertise, and the platform's voting and reputation system rewards quality contributions. We hope to create a self-sustaining cycle of knowledge.
+Creating a space where developers can quickly find accurate, reliable answers to their coding questions. What sets it apart is the community-driven approach, where users contribute their expertise, and the platform's voting and reputation system rewards quality contributions. We hope to create a self-sustaining cycle of knowledge.  
+
+This proposal corresponds to an information system with a web interface to manage a community of collaborative questions and answers. Any registered user can submit questions or answers. The questions and answers can be voted on by the rest of the community. It is also possible to associate brief comments to the questions or the answers. Each user has an associated score that is calculated considering the votes on its questions and answers.
 
 ## Project Components
 | Component | Grade |
@@ -21,7 +23,7 @@ The practical work is based on a fixed technology stack. Key technologies used a
 * `Laravel` as the server web framework
 * `NGINX` as the web server
 * `HTML, CSS and JavaScript` as client languages
-* `Bootstrap` Front-end framework for responsive design and UI components
+* `Bootstrap` for responsive design and UI components
 
 ## Testing our image locally
 
