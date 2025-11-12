@@ -2,35 +2,45 @@
 
 Creating a space where developers can quickly find accurate, reliable answers to their coding questions. What sets it apart is the community-driven approach, where users contribute their expertise, and the platform's voting and reputation system rewards quality contributions. We hope to create a self-sustaining cycle of knowledge.
 
-# Project Components
+## Project Components
+| Component | Grade |
+|-|-|
+| [ER: Requirements Specification](https://gitlab.up.pt/lbaw/lbaw2425/lbaw24141/-/wikis/ER) | 18.6/20 |
+| [EBD : Database Specification](https://gitlab.up.pt/lbaw/lbaw2425/lbaw24141/-/wikis/EBD) | 15.6/20 | 
+| [EAP : Architecture Specification and Prototype](https://gitlab.up.pt/lbaw/lbaw2425/lbaw24141/-/wikis/EAP) | 16.4/20 |
+| [PA : Product and Presentation](https://gitlab.up.pt/lbaw/lbaw2425/lbaw24141/-/wikis/PA) | 18.2/20 |
 
-* [ER: Requirements Specification](https://gitlab.up.pt/lbaw/lbaw2425/lbaw24141/-/wikis/ER)
+## Technologies
 
-* [EBD : Database Specification](https://gitlab.up.pt/lbaw/lbaw2425/lbaw24141/-/wikis/EBD)
+The practical work is based on a fixed technology stack. Key technologies used are:
 
-* [EAP : Architecture Specification and Prototype](https://gitlab.up.pt/lbaw/lbaw2425/lbaw24141/-/wikis/EAP)
+* `GitLab` for collaborative software development, documentation, and versioning
+* `PostgreSQL` as the database
+* `PHP` as the programming language on the server
+* `Docker` as the virtualization environment
+* `Laravel` as the server web framework
+* `NGINX` as the web server
+* `HTML, CSS and JavaScript` as client languages
+* `Bootstrap` Front-end framework for responsive design and UI components
 
-* [PA : Product and Presentation](https://gitlab.up.pt/lbaw/lbaw2425/lbaw24141/-/wikis/PA)
+## Testing our image locally
 
-### Installation
+You can run our image locally to test it:
 
-Here is our final product link:
-
-[Final Product](https://gitlab.up.pt/lbaw/lbaw2425/lbaw24141/-/tree/PA?ref_type=tags)
-
-And here the docker command to start the image:
+```bash
 docker run -d --name lbaw24141 -p 8001:80 gitlab.up.pt:5050/lbaw/lbaw2425/lbaw24141
+```
 
-### Usage
+## Usage
 
-#### Administration Credentials
+### Administration Credentials
 
 
 | Email | Password |
 |----------|----------|
 | admin@example.com | 1234 |
 
-#### User Credentials
+### User Credentials
 
 | Type | email | Password |
 |------|----------|----------|
@@ -38,7 +48,7 @@ docker run -d --name lbaw24141 -p 8001:80 gitlab.up.pt:5050/lbaw/lbaw2425/lbaw24
 | banned user | pedro.oliveira@example.com  | 1234 |
 
 
-#### Mailtrap Credentials
+### Mailtrap Credentials
 
 | Email | Password |
 |----------|----------|
@@ -48,9 +58,13 @@ Maybe, need to log in to Google, because we signed up with Google in mailtrap we
 
 With that, can also try log in with google feature.
 
+## Demo
+
+https://github.com/user-attachments/assets/b79a0bfa-47be-4ca0-9514-67254568ae14
+
 
 # Team
-* Diogo Salazar Ramos, up202207954@up.pt
-* Rafael Filipe Barbosa da Costa, up202205013@up.pt
-* Daniel Gomes Silva, up201909935@up.pt
-* Tiago Miguel Alves Pires, up202208910@up.pt
+* Diogo Salazar Ramos
+* Rafael Filipe Barbosa da Costa
+* Daniel Gomes Silva
+* Tiago Miguel Alves Pires
